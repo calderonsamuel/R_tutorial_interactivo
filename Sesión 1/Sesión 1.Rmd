@@ -1,0 +1,347 @@
+---
+title: "Sesión 1"
+output: 
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+description: "Aprender los elementos básicos de la programación con R"
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+tutorial_options(exercise.timelimit = 5, exercise.completion = FALSE)
+```
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+## Tema 1: Elementos básicos
+
+### Usar R como calculadora
+
+R es un entorno y lenguaje de programación con un enfoque al análisis estadístico[^1]. En palabras sencillas, R es un idioma con el que podemos pedirle a nuestra computadora que haga ciertas cosas para nosotros. En estos tutoriales usaremos R a través de RStudio[^2].
+
+Debido a que casi todo lo que puedes hacer con R se hace a través de objetos, empezaremos presentando dos de los más comunes: los operadores y las funciones. Iremos conociendo otros tipos de objetos a medida que avancemos en los tutoriales.
+
+### Operadores aritméticos
+
+Los operadores, como dice su nombre, nos permiten realizar operaciones entre ciertos valores de manera similar a como lo haríamos con una calculadora. Los siguientes nos permiten realizar operaciones aritméticas básicas:
+
+|Operador|Operación|
+|:------:|---------|
+| `+`    | Adición    |
+| `-`    | Sustracción|
+| `*`    | Multiplicación|
+| `/`    | División real |
+| `**` o `^`| Potencia |
+| `()`   | Para priorizar operaciones al interior de los paréntesis |
+
+Podemos ver cómo lucen los operadores en funcionamiento al usarlos en R. 
+
+*Realiza alguna operación aritmética*
+
+```{r aritmeticos, exercise=TRUE}
+
+```
+
+### Quiz aritmético
+
+```{r quiz-aritmetico}
+quiz(
+  question("¿Cuál sería el resultado de correr `(((1+2)*3)**2)/3`?",
+    answer("No tengo idea"),
+    answer("6"),
+    answer("27", correct = TRUE),
+    answer("69"),
+    correct = "¡Correcto! R primero opera el `1+2` al ser el nivel más profundo, obteniendo como resultado 3. Inmediatamente después, R realiza la operación `3*3` y obtiene 9. Después de esto, R opera el `9**2`obteniedo 81, y finaliza con la operación `81/3`, obteniedo 27 como resultado.",
+    allow_retry = TRUE
+  ),
+  question("¿Cuáles de las siguientes expresiones dan el mismo resultado que `2+2-2*2/2**2`?",
+    answer("`(2+2)-(2*(2/(2**2)))`", correct = TRUE),
+    answer("`2+(2-(2*(2/(2**2))))`", correct = TRUE),
+    answer("`(2+2)-(2*2)/(2**2)`", correct = TRUE),
+    answer("`2+2-(2*(2/2)**2)`"),
+    allow_retry = TRUE
+  )
+)
+```
+
+Hasta este punto, R está siendo utilizado como una simple calculadora, pero podemos exigirle mucho más.
+
+### Operador de asignación
+
+Antes de explotar al máximo las capacidades de R, es necesario conocer otro operador fundamental: el de asignamiento. Está compuesto por el signo "menor que" (`<`) y el signo de resta (`-`), que al juntarse lucen como una flecha que apunta hacia la izquierda (`<-`). Este operador sirve para asignar un nombre a cualquier objeto o valor, de tal modo podamos acceder a él con mayor facilidad. Por ejemplo, podemos asignarle el nombre "resultado" al resultado de la operación que realizamos anteriormente.
+
+*A simple vista, nada ha cambiado[^3], pero cuando accedemos al objeto* `resultado` *ahora obtenemos inmediatamente la respuesta de nuestra operación.*
+
+```{r resultado, exercise=TRUE, exercise.lines = 4}
+resultado <- (((1+2)*3)**2)/3
+
+# Escribe "resultado" sin las comillas debajo de este comentario y ejecuta el código
+
+```
+
+### Actualizar valor asignado
+
+Si por algún motivo necesitamos actualizar el valor asignado a nuestro objeto, basta con volver a asignar el mismo nombre a otro valor. Incluso se puede hacer referencia al valor anterior para modificarlo. No hay un límite de veces que el valor de un objeto puede ser modificado. En el siguiente ejemplo, sumaremos 3 a `resultado` para obtener 30. 
+
+```{r actualizar-asignado, exercise=TRUE}
+resultado <- (((1+2)*3)**2)/3
+
+resultado <- resultado + 3
+
+resultado
+```
+
+
+## Tema 2: Funciones
+
+### ¿Qué son las funciones?
+
+Hemos visto que podemos usar el operador `**` para elevar un número a cualquier potencia, pero no tenemos un operador para obtener la raíz. Podemos solucionar esto haciendo uso de funciones.
+
+Las funciones nos permiten aplicar transformaciones a los valores u objetos que ingresemos en ellas. Para crear una función, debemos asignarle un nombre, argumentos y código que será utilizado para la transformación. Su forma general en R es la siguiente:
+
+```{r, echo = TRUE, eval = FALSE}
+nombredefuncion <- function(argumento_1, argumento_2, argumento_n){
+  
+cuerpo de código
+  
+}
+```
+
+### Función de raíz cuadrada
+
+Para que sea más entendible, haremos nuestra función para hallar la raíz cuadrada de cualquier número[^4] y la llamaremos `raiz_cuadrada`. Siempre es importante asignar un nombre significativo y que dé una buena idea del funcionamiento de la función.
+
+*Como vemos en el cuerpo de la función, esta obtiene un número "x" y calcula su raíz cuadrada. Probemos su funcionamiento.*
+
+```{r raiz_cuadrada, exercise=TRUE, exercise.lines=9}
+raiz_cuadrada <- function(x){
+  
+  x**(1/2)
+  
+}
+
+# Escribe "raiz_cuadrada(25)" para obtener la raíz de 25
+
+```
+
+### Función de raiz cúbica
+
+R ha calculado de manera correcta que la raíz cuadrada de 25 es 5. También podemos hacer una función para determinar la raíz cúbica de un número "x" de la misma manera.
+
+```{r raiz_cubica, exercise=TRUE, exercise.lines=9}
+raiz_cubica <- function(x){
+  
+  x**(1/3)
+  
+}
+
+# Escribe "raiz_cubica(27)" para obtener la raíz cúbica de 27
+
+```
+
+### Raíz n
+
+Al probarel funcionamiento de `raiz_cubica()` vemos que nos arroja el cálculo correcto. Podríamos hacer una función de raíz para cada número, pero como las funciones pueden tener más de un argumento, podemos usar eso para nuestra ventaja y hacer una función que aplique una raiz "n" a cualquier número "x".
+
+```{r raiz_n, exercise=TRUE, exercise.lines=9}
+raiz_n <- function(x, n){
+  
+  x**(1/n)
+  
+}
+
+# Escribe "raiz_n(1024, 10)" para obtener la raíz 10 de 1024
+
+
+```
+
+### Función texto_raiz()
+
+Ese es el poder de las funciones, nos permiten hacer nuestras transformaciones de manera generalizada. Incluso podemos usar funciones en el cuerpo y argumento de otras funciones. En el siguiente ejemplo, usaremos la función predefinida `paste()`, que nos permite pegar textos para formar una oración.
+
+```{r texto_raiz-setup}
+raiz_n <- function(x, n){
+  
+  x**(1/n)
+  
+}
+```
+
+
+```{r texto_raiz, exercise=TRUE, exercise.lines=9}
+texto_raiz <- function(x, n){
+  
+  paste("La raiz ", n, " de", x, "es ", raiz_n(x, n))
+}
+
+texto_raiz(1024, 10)
+
+```
+
+Los argumentos de una función no necesitan ir en la misma línea de código. Para una más fácil lectura, es posible separarlos por líneas (respetando las comas entre argumentos) siempre y cuando sigan dentro del mismo paréntesis de la función. Utilizaremos la función `paste()` para ejemplificar.
+
+```{r paste, exercise = TRUE}
+paste("Un", "texto", "largo", "se", "imprime")
+
+paste("Un", 
+      "texto", 
+      "largo", 
+      "se", 
+      "imprime")
+```
+
+*Una vez que hemos entendido cómo usar funciones, estamos listos para conocer los paquetes.*
+
+## Tema 3: Paquetes
+
+### ¿Qué son los paquetes?
+
+R es un lenguaje utilizado por muchas personas y cada quien escribe sus funciones según sus propias necesidades. Sin embargo, no resulta extraño que varios usuarios necesiten lo mismo. Por ejemplo, resulta lógico pensar que no somos las únicas personas que necesitan obtener la raíz "n" de un número. 
+
+Es en este punto que entran en juego los paquetes, una colección de funciones y datos que los usuarios de R comparten entre sí para facilitar el trabajo a los demás y evitar la repetición innecesaria de creación de funciones de uso común o de alta utilidad[^5]. Hay paquetes de todo tipo, desde los que te permiten realizar una función muy específica (como `clipr` que es usado para copiar y pegar información contenida en el portapapeles del sistema) hasta los que te permiten expandir los límites de lo que R es capaz de hacer (como `reticulate`, que te permite ejecutar código del lenguaje de programación Python en tu entorno R).
+
+Cuando inicias R, se activa un grupo base de paquetes. Estos han sido desarrollados por el R Core Team y son la pieza fundamental de su funcionalidad. 
+
+Puedes instalar paquetes usando la función `install.packages()` y poniendo como argumento el nombre del paquete entre comillas `""`.  Este procedimiento sólo será necesario una vez, ya que después de instalados, los paquetes son conservados en la memoria de la computadora. Aquí puedes ver algunos ejemplos:
+
+```{r install.packages, eval = FALSE, echo = TRUE}
+install.packages("ggplot2")
+install.packages("DT")
+install.packages("RColorBrewer")
+```
+
+Pero tenerlos instalados no es suficiente. Cada vez que necesitas usar un paquete lo puedes llamar con `library(paquete)`. Por ejemplo:
+
+```{r ejemplo-library, echo=TRUE, eval=FALSE}
+library(ggplot2)
+library(DT)
+library(RColorBrewer)
+```
+
+Esto hará que sus funciones y objetos estén disponibles para el uso. Te darás cuenta que no has llamado al paquete si corres un código y el resultado es un error como este: 
+
+```{r glue-error, error = TRUE, echo=TRUE}
+glue("texto", "de", "ejemplo")
+```
+Esto significa que no has llamado al paquete necesario usando `library()`. En cambio, si al llamar al paquete te da como resultado un error de este tipo:
+
+```{r, error = TRUE, echo=TRUE}
+library(testpackage)
+```
+
+Significa que necesitas instalarlo. No hay que asustarse al obtener un mensaje de error alguna vez, por lo general suelen ser bastante explicativos respecto a por qué son causados y nos permiten corregir aquello en lo que nos equivocamos.
+
+Es posible instalar paquetes desde otro origen, como Github o BioConductor, pero no enseñaremos a realizarlo. Una breve visita a Google permitirá satisfacer a los curiosos.
+
+### Quiz Paquetes
+
+```{r quiz-paquetes}
+quiz(
+  question("Deseo usar una función del paquete instalado `dplyr`, ¿cómo puedo acceder a sus funciones?",
+    answer('`dplyr <- install.packages("dplyr")`'),
+    answer('`install.packages("dplyr")`'),
+    answer('`library("dplyr")`'),
+    answer("`library(dplyr)`", correct = TRUE),
+    allow_retry = TRUE
+  ),
+  question("Obtuve el siguiente mensaje: `Error in library(ggplot2): there is no package called 'ggplot2'`. ¿Qué hice mal?",
+    answer("Intentar instalar un paquete que no existe"),
+    answer("Intentar correr una función sin cargar el paquete que la contiene"),
+    answer("Intentar correr una función habiendo llamado un paquete diferente al que la contenía"),
+    answer("Intentar cargar un paquete que no había instalado", correct = TRUE)
+  )
+)
+```
+
+## Tema 4: Vectores
+
+### Identificando los vectores
+
+Los siguientes objetos fundamentales para el manejo de R son los vectores. Estos pueden ser de dos tipos: atómicos y listas. La diferencia entre ellos radica en el tipo de información que pueden contener. Para efectos de estos tutoriales, consideraremos las listas como vectores "especiales" junto a otros que explicaremos más adelante. 
+
+### Vectores atómicos
+
+Los cuatro principales tipos de vectores atómicos son: *logical*, *double*, *integer* y *character*[^6]. Los vectores de tipo *logical* pueden asumir dos valores: `TRUE` o `FALSE`(o en su forma abreviada `T` o `F`). Los de tipo *double* e *integer* asumen valores numéricos, los *double* pueden asumir valores racionales y los *integer* sólo valores enteros. Los vectores de tipo *character* asumen cualquier cadena de texto. En el siguiente recuadro de código podemos ver un ejemplo de cada uno:
+
+```{r atomicos, echo=TRUE}
+v_logical <- TRUE
+v_double <- 3.1416
+v_integer <- 5L
+v_character <- "Hola mundo"
+```
+
+Si estamos atentos, vemos que el *integer*  va acompañado de una "L" al final. Esto es necesario porque R interpreta por defecto cualquier número como *double*. Tanto los *double* como los *integer* pertenecen a la categoría de vectores numéricos. Los *character* siempre estarán rodeados de comillas (`""`). 
+
+### Comprobar tipo de vector con `is.*()`
+
+Para comprobar si nuestro vector es de un tipo determinado utilizamos una función de forma `is.*()` reemplazando el `*` por el tipo que queremos comprobar.
+
+```{r is.type, echo=TRUE}
+is.logical(v_logical)
+is.numeric(v_double)
+is.integer(v_double)
+```
+
+Podemos ver que por cada consulta obtenemos un valor *logical* `TRUE` cuando se cumple la condición y `FALSE` cuando no se cumple. Es decir, es cierto que `v_logical` es *logical*, es cierto que `v_double` es numérico y es falso que `v_double` es *integer*. El valor *logical* obtenido con cada consulta es un vector en sí mismo.
+
+### Comprobar tipo de vector con `typeof()`
+
+Otra manera de verificar el tipo de vector que tenemos es con la función `typeof()`. Esta nos devuelve un  *character* indicando el tipo de vector que tenemos.
+
+```{r typeof, echo=TRUE}
+typeof(v_character)
+typeof(v_integer)
+```
+
+### Exercise with Hint
+
+*Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
+
+Modify the following code to limit the number of rows printed to 5:
+
+```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
+mtcars
+```
+
+```{r print-limit-hint}
+head(mtcars)
+```
+
+### Quiz
+
+*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
+
+Some questions to verify that you understand the purposes of various base and recommended R packages:
+
+```{r quiz}
+quiz(
+  question("Which package contains functions for installing other R packages?",
+    answer("base"),
+    answer("tools"),
+    answer("utils", correct = TRUE),
+    answer("codetools")
+  ),
+  question("Which of the R packages listed below are used to create plots?",
+    answer("lattice", correct = TRUE),
+    answer("tools"),
+    answer("stats"),
+    answer("grid", correct = TRUE)
+  )
+)
+```
+
+[^1]: Definición obtenida de https://es.wikipedia.org/wiki/R_(lenguaje_de_programaci%C3%B3n)
+[^2]: RStudio es un Entorno de desarrollo integrado (IDE) para R. Para instalar ambos, recomendamos seguir las instrucciones del punto 1.4.1 y 1.4.2 del siguiente enlace https://es.r4ds.hadley.nz/introducci%C3%B3n.html
+[^3]: Si estamos usando RStudio podemos ver que en en la sección Values de la pestaña "Environment" ha aparecido nuestro objeto "resultado" asociado al resultado de la operación.
+[^4]: Teniendo en cuenta que la raíz cuadrada de X puede ser expresada como potencia de X en la forma X^(1/2)^
+[^5]: Podemos obtener la mayor parte de paquetes del CRAN (Comprehensive R Archive Network). La función `install.packages()` busca allí los paquetes que le pedimos que descargue.
+[^6]: No se conoce una traducción oficial al castellano para los tipos de vectores. En la versión en español de "R for data science" son llamados lógicos, dobles, enteros y caracter.
+[^7]: Al menos no de manera automática, como sí se puede en otros lenguajes de programación.
+
