@@ -21,6 +21,10 @@ text-align: justify}
 
 ## Tema 1: Elementos básicos
 
+### ¿Por qué aprender a programar?
+
+![](https://youtu.be/X5Wkp1gsNik?t=346)
+
 ### Usar R como calculadora
 
 R es un entorno y lenguaje de programación con un enfoque al análisis estadístico[^1]. En palabras sencillas, R es un idioma con el que podemos pedirle a nuestra computadora que haga ciertas cosas para nosotros. En estos tutoriales usaremos R a través de RStudio[^2].
@@ -197,6 +201,49 @@ paste("Un",
       "imprime")
 ```
 
+### Argumentos de una función
+
+Como hemos visto, las funciones necesitan ser provistas de argumentos a través de los cuales pasamos los objetos o valores que serán transformados en el cuerpo de la función. Una manera sencilla de verificar qué argumentos tiene una función es haciendo uso de la función `args()`. 
+
+```{r args, exercise=TRUE, exercise.setup= "texto_raiz-setup"}
+# Ver los argumentos de la función que definimos preiamente
+args(raiz_n)
+```
+
+Podemos tener un panorama más completo, viendo tanto los argumentos como el cuerpo de la función, si ingresamos sólo el nombre de la función **sin usar paréntesis**.
+
+```{r function-name, exercise=TRUE, exercise.setup="texto_raiz-setup"}
+raiz_n
+```
+
+### Argumentos por defecto
+
+Un truco muy útil al usar funciones es utilizar argumentos con valores por defecto. Vamos a reescribir nuestra función `raiz_n()` para utilizar un valor por defecto de `n = 2`, de tal modo que cuando no le proveamos explícitamente un valor para `n`, la función no deje de funcionar. 
+
+```{r arg-por-defecto, exercise = TRUE}
+raiz_n <- function(x, n = 2){
+  x ** (1/n)
+}
+
+# Utiliza la función sin indicar un valor para n. Por ejemplo: raiz_n(16)
+```
+
+Este es un truco muy utilizado por muchas funciones, porque permite no repetir trabajo innecesario y al mismo tiempo darle al usuario de la función una recomendación de cómo implementarla.
+
+### Argumento elipsis {data-allow-skip=TRUE}
+
+En algunas funciones, vamos a encontrar que al inspeccionar sus argumentos, nos aparece uno que sólo contiene tres puntos (`...`), también llamados *elipsis*. Esto es utilizado cuando no sabemos de antemano cuántos objetos serán introducidos en la función, o cuando una función hace uso en su interior de una función que utiliza la elipsis. Tenemos el ejemplo de las funciones `sum()`y `mean()`.
+
+```{r elipsis, exercise = TRUE}
+# sum() devuelve la suma de todos los valores ingresados a su elipsis
+args(sum)
+
+# mean() devuelve el promedio de su objeto x, pero utiliza internamente sum()
+args(mean)
+```
+
+En la web de [R-bloggers](https://www.r-bloggers.com/r-three-dots-ellipsis/) hay una explicación más detallada.
+
 *Una vez que hemos entendido cómo usar funciones, estamos listos para conocer los paquetes.*
 
 ## Tema 3: Paquetes
@@ -259,6 +306,26 @@ quiz(
   )
 )
 ```
+
+### Obtener ayuda de una función
+
+Cuando no estamos seguros de cómo implementar una función, podemos consultar su documentación. En R, esto se realiza con la función `help()`. Basta con ingresar el nombre de la función como único argumento.
+
+```{r help, exercise=TRUE}
+library(lubridate)
+
+help(today)
+```
+
+Esta función también nos puede brindar información de otros objetos contenidos en R base o paquetes que hemos cargado.
+
+```{r help_}
+library(ggplot2)
+
+help(economics)
+```
+
+
 
 ## Tema 4: Vectores
 
@@ -345,6 +412,8 @@ mi_vector_muy_largo <- c(mi_vector_numerico1,
 print(mi_vector_muy_largo)
 typeof(mi_vector_muy_largo)
 ```
+
+## Tema 5: Coerción y valores NA
 
 ### Coerción de vectores
 
@@ -439,20 +508,62 @@ R interpreta como `TRUE` todo número diferente a `0`. Es probable que no sea el
 as.integer("sustantivo")
 ```
 
-### Exercise with Hint
+R no es capaz de asignar un valor numérico a `"sustantivo"` y como resultado nos arroja un advertencia o *warning*: `NAs introduced by coercion`. El valor `NA` representa un valor perdido y no es posible transformarlo. Los valores perdidos pueden aparecer en nuestros datos por diferentes motivos, desde la recolección hasta la transformación de nuestra data. 
 
-*Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
+### Suma con valor NA
 
-Modify the following code to limit the number of rows printed to 5:
+Debemos ser extremadamente cuidadosos al trabajar con ellos, porque pueden generar algunos problemas indeseados. Por ejemplo, si queremos obtener la suma de todos los elementos de un vector, usando la función `sum()`, y resulta que uno de ellos es un `NA`.
 
-```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
-mtcars
+```{r vector_con_NA, echo=TRUE}
+vector_con_NA <- c(1, 2, 3, 4, NA, 6, 7)
 ```
 
-```{r print-limit-hint}
-head(mtcars)
+
+```{r sum-con-na, exercise=TRUE}
+sum(vector_con_NA)
 ```
 
+El resultado obtenido es simplemente `NA`. El mismo problema se extiende al querer obtener un promedio usando la función `mean()`.
+
+```{r mean-con-na, exercise=TRUE}
+mean(vector_con_NA)
+```
+
+### Argumento `na.rm`
+
+Felizmente, estas funciones permiten proporcionar el argumento `na.rm = TRUE` para ignorar los valores `NA` y trabajar sólo con valores válidos.
+
+```{r na-rm, exercise=TRUE}
+sum(vector_con_NA, na.rm = TRUE)
+mean(vector_con_NA, na.rm = TRUE)
+```
+
+Sin embargo, no necesariamente encontraremos esta herramienta en todas las funciones que trabajan con vectores. Por ello es indispensable estar atentos al trabajar nuestros datos y revisar la documentación de las funciones con las que estamos trabajando.
+
+## Proyecto: Dados cargados
+
+### ¿Qué son los dados cargados?
+
+Son dados cuyos números no tienen una probabilidad equitativa de ser obtenidos.
+
+![](https://www.youtube.com/watch?v=uPgMKAijIUk)
+
+### Indicaciones
+
+El proyecto se realiza en un R script dentro de RStudio. Una vez finalizado, debe ser enviado al repositorio en Github del participante del taller a través de un "Push".
+
+1. Revisa los argumentos o páginas de ayuda de las funciones `sample()` y `rep()`. ¿Cuáles son sus argumentos por defecto?
+2. Crea un vector `dado_normal` que contenga los seis lados de un dado normal. Tú decides qué *tipo* de vector sería el más adecuado.
+3. Utiliza la función `sample()` y `dado_normal` para simular el lanzamiento de unos dados.
+4. Crea un vector `dado_cargado` que tenga los seis lados de un lado normal, pero con diferentes proporciones. Puedes utilizar `rep()` en el proceso.
+5. Crea una función `lanzar_dado()` que tome como argumento único un vector `dado_*` y devuelva una frase indicando el número obtenido a través de un uso de `sample()`. Por ejemplo: "Lanzaste el dado y obtuviste el número X". La función `paste()`que ya conoces, te ayudará a obtener la frase.
+
+Opcional
+
+- Crea `lanzar_dados()` de tal modo que devuelva el resultado de dos lanzamientos. Por ejemplo: "Lanzaste dos dados y obtuviste los números X y Y".
+- Crea `lanzar_dado_cargado()`, una función sin argumentos que retorne el número resultado de tirar un dado cargado sin crear antes ningún vector. (Es posible hacerlo usando el argumento `prob` de la función `sample()`)
+
+***
 
 [^1]: Definición obtenida de https://es.wikipedia.org/wiki/R_(lenguaje_de_programaci%C3%B3n)
 [^2]: RStudio es un Entorno de desarrollo integrado (IDE) para R. Para instalar ambos, recomendamos seguir las instrucciones del punto 1.4.1 y 1.4.2 del siguiente enlace https://es.r4ds.hadley.nz/introducci%C3%B3n.html
@@ -461,4 +572,6 @@ head(mtcars)
 [^5]: Podemos obtener la mayor parte de paquetes del CRAN (Comprehensive R Archive Network). La función `install.packages()` busca allí los paquetes que le pedimos que descargue.
 [^6]: No se conoce una traducción oficial al castellano para los tipos de vectores. En la versión en español de "R for data science" son llamados lógicos, dobles, enteros y caracter.
 [^7]: Al menos no de manera automática, como sí se puede en otros lenguajes de programación.
+
+
 
