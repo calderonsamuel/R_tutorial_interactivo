@@ -300,6 +300,145 @@ typeof(v_character)
 typeof(v_integer)
 ```
 
+### Vectores con más de un elemento 
+
+Hasta el momento hemos visto vectores que contienen un solo elemento. Sin embargo, es sumamente común encontrarse con vectores de mayor longitud. Por ejemplo, el vector `letters` contiene todas las letras minúsculas del alfabeto. Podemos consultar la longitud de un vector con la función `length()`. Esto es muy útil cuando sabemos que nuestro vector podría contener una gran cantidad de elementos y no queremos inspeccionarlos todos. El número que vemos rodeado entre corchetes (`[]`) en nuestro resultado nos indica el índice que el elemento siguiente tiene en el vector. Es por ello que hasta el momento en cada operación que realizábamos hemos obtenido un "[1]" antes de cada resultado.
+
+```{r length, echo=TRUE}
+length(v_logical)
+length(letters)
+print(letters)
+```
+
+Para formar vectores de longitud mayor a uno se utiliza la función `c()` agregando como argumentos todos los elementos que queremos.
+
+```{r mi_vector_largo, echo=TRUE}
+mi_vector_largo <- c("elemento1", 
+                     "elemento2", 
+                     "elemento3", 
+                     "elemento4")
+
+print(mi_vector_largo)
+```
+
+### Operador de secuencia simple
+
+Para vectores numéricos, también es posible utilizar el signo dos puntos (`:`) como operador para crear una secuencia, que avanza de uno en uno, desde un número a otro. El vector resultado incluirá a los dos números utilizados en la operación. 
+
+```{r mi_vector_numerico1, echo=TRUE}
+mi_vector_numerico1 <- 1:6
+
+print(mi_vector_numerico1)
+```
+
+### Concatenar vectores largos
+
+Podemos hacer uso de `c()` nuevamente para seguir haciendo crecer nuestro vector. Incluso podemos usar una operación de secuencia como argumento. Al consultar el tipo de vector que hemos creado, vemos que mantiene el mismo tipo que sus "ancestros": *integer*.
+
+```{r mi_vector_numerico2, echo=TRUE}
+mi_vector_numerico2 <- 11:16
+
+mi_vector_muy_largo <- c(mi_vector_numerico1, 
+                         mi_vector_numerico2, 
+                         21:26)
+
+print(mi_vector_muy_largo)
+typeof(mi_vector_muy_largo)
+```
+
+### Coerción de vectores
+
+Crear vectores más largos puede tener efectos inesperados para el usuario que no está atento. Veamos el siguiente ejemplo:
+
+```{r vector_combinado, exercise=TRUE}
+vector_combinado <- c(mi_vector_muy_largo, "1")
+
+typeof(vector_combinado)
+```
+
+Al agregar `"1"` a nuestro vector, su tipo ha cambiado a *character*. ¿Por qué sucede esto? En primer lugar, hay que tener claro que `"1"` no es lo mismo que `1`. Recordemos que todo valor que está entre comillas es de tipo *character*, incluso si se trata de números. 
+
+En segundo lugar, tengamos en cuenta que los vectores atómicos sólo pueden tener un tipo. Esto quiere decir que cuando los tipos de los elementos que se combinan dentro del vector son diferentes, R debe decidir cuál de los tipos de vector mantener, eligiéndo sólo uno. Este procedimiento es llamado **coerción**.
+
+### Reglas de coerción implícita
+
+Aunque suena complicado, las reglas de coerción son bastante sencillas. R le dará prioridad a mantener el tipo de vector según el siguiente orden:
+
+1. Character
+2. Double
+3. Integer
+4. Logical
+
+Es decir, ante cualquier conflicto en el tipo de vectores a combinar se preservará el tipo que tenga más alta prioridad. Si nos detenemos a analizar por qué sucede, es bastante evidente. Los valores *logical* son en realidad leídos por la computadora como `1` cuando son `TRUE` y como `0` cuando son `FALSE`. Es por ello que la siguiente operación no nos arroja un error.
+
+```{r uno_mas_true, echo=TRUE}
+1L + TRUE
+```
+
+Del mismo modo, sabemos que cualquier número entero también puede ser expresado como número racional. Es por ello que los *integer* son coercionados a *double* cuando hay conflicto entre ellos.
+
+```{r uno_mas_pi, echo=TRUE}
+typeof(1L + 3.1416)
+```
+
+¿Es posible convertir texto a números en R? No[^7]. Es por ello que cuando un vector tipo *character* se combina con cualquier otro tipo de vector, prevalece el tipo *character*, como en el ejemplo que vimos al inicio de esta sección.
+
+### Coerción explícita
+
+En todos los casos de coerción que hemos mencionado hasta el momento R ha decidido mediante sus propias reglas qué tipo de vector debe prevalecer, aplicando **coerción implícita**. Este procedimiento puede ocasionar problemas cuando el usuario no tiene suficientemente claras las reglas de coerción.
+
+La **coerción explícita** permite decidir de antemano qué tipo de vector queremos obtener. Para ello se hace uso de una función de la forma `as.*()` donde `*` representa el tipo deseado.
+
+```{r as-integer, exercise=TRUE}
+vector_true_integer <- as.integer(TRUE)
+
+typeof(vector_true_integer)
+```
+
+En este ejemplo, hemos usado `as.integer()` para cambiar el tipo de nuestro vector, de *logical* a *integer*. Es posible hacer lo mismo para otros tipos de vectores. Tomemos en cuenta que la transformación se realiza de manera directa, sin respetar el orden de prioridad. 
+
+```{r as-character, exercise=TRUE}
+as.character(TRUE)
+```
+
+Es por ello que `TRUE` se convierte directamente en el *character* `"TRUE"` sin convertirse primero en el *integer* `1L`, luego en el *double* `1` y luego en el *character* `"1"`. De aquí viene el verdadero poder de la coerción explícita, porque nos permite incluso "revertir" el orden de prioridad que R usa en la coerción implícita. Es decir, podemos convertir **cualquier** tipo de vector a otro.
+
+```{r multiple-typeof, exercise=TRUE}
+typeof(as.logical("TRUE"))
+typeof(as.integer("10"))
+typeof(as.integer(5.0))
+typeof(as.double("6.108"))
+```
+
+### Coerción puede perder información
+
+De todos modos, esto se debe usar con precaución. Sabemos que todo *logical* puede convertirse a *integer*, estos a su vez pueden convertirse a *double* y estos a *character* sin perder ninguna información. No sucede lo mismo en el procedimiento reverso. Por ejemplo, esto sucede cuando queremos convertir un *double* con cifras decimales a *integer*.
+
+```{r as-integer-decimal, exercise=TRUE}
+as.integer(5.4234)
+```
+
+El contenido decimal se pierde, porque R no lo necesita en el *integer*, y no es posible recuperarlo aún retransformando el valor a *double* en la misma línea de código.
+
+```{r as-double-as-integer-decimal, exercise=TRUE}
+as.double(as.integer(5.4234))
+```
+
+Algo similar sucede cuando intentamos convertir a *logical* valores numéricos mayores a 1. 
+
+```{r as-logical-coercion, exercise=TRUE}
+as.logical(8)
+as.logical(-0.000000135)
+```
+
+R interpreta como `TRUE` todo número diferente a `0`. Es probable que no sea el resultado que esperábamos en esta transformación. Pero todavía hay más. ¿Qué sucederá si intentamos convertir una **palabra** a número?
+
+### Valores NA
+
+```{r na_int, exercise=TRUE}
+as.integer("sustantivo")
+```
+
 ### Exercise with Hint
 
 *Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
@@ -314,28 +453,6 @@ mtcars
 head(mtcars)
 ```
 
-### Quiz
-
-*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
-
-Some questions to verify that you understand the purposes of various base and recommended R packages:
-
-```{r quiz}
-quiz(
-  question("Which package contains functions for installing other R packages?",
-    answer("base"),
-    answer("tools"),
-    answer("utils", correct = TRUE),
-    answer("codetools")
-  ),
-  question("Which of the R packages listed below are used to create plots?",
-    answer("lattice", correct = TRUE),
-    answer("tools"),
-    answer("stats"),
-    answer("grid", correct = TRUE)
-  )
-)
-```
 
 [^1]: Definición obtenida de https://es.wikipedia.org/wiki/R_(lenguaje_de_programaci%C3%B3n)
 [^2]: RStudio es un Entorno de desarrollo integrado (IDE) para R. Para instalar ambos, recomendamos seguir las instrucciones del punto 1.4.1 y 1.4.2 del siguiente enlace https://es.r4ds.hadley.nz/introducci%C3%B3n.html
