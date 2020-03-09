@@ -1,15 +1,12 @@
 ---
-title: "README"
+title: "Tutorial interactivo de R"
 author: "Samuel Calderon"
-date: "9/3/2020"
 output: 
   html_document: 
     keep_md: yes
 ---
 
 
-
-# Tutorial interactivo de R
 
 ## Pasos a seguir para usar los tutoriales
 
