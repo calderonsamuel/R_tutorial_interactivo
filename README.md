@@ -1,12 +1,4 @@
----
-title: "Tutorial interactivo de R"
-author: "Samuel Calderon"
-output: 
-  html_document: 
-    keep_md: yes
----
-
-
+# Tutorial interactivo de R
 
 ## Pasos a seguir para usar los tutoriales
 
