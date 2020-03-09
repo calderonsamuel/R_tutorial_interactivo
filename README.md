@@ -1,9 +1,10 @@
 ---
 title: "README"
 author: "Samuel Calderon"
+date: "9/3/2020"
 output: 
-  html_document:
-    keep_md: true
+  html_document: 
+    keep_md: yes
 ---
 
 
