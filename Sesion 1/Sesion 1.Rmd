@@ -283,8 +283,10 @@ glue("texto", "de", "ejemplo")
 ```
 Esto significa que no has llamado al paquete necesario usando `library()`. En cambio, si al llamar al paquete te da como resultado un error de este tipo:
 
-```{r, error = TRUE, echo=TRUE}
+```{r, echo=TRUE, eval=FALSE}
 library(testpackage)
+
+# Error in library(testpackage) : there is no package called ‘testpackage’
 ```
 
 Significa que necesitas instalarlo. No hay que asustarse al obtener un mensaje de error alguna vez, por lo general suelen ser bastante explicativos respecto a por qué son causados y nos permiten corregir aquello en lo que nos equivocamos.
