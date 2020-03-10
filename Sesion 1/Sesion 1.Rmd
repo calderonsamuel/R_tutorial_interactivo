@@ -21,7 +21,11 @@ text-align: justify}
 
 ## Tema 1: Elementos básicos
 
+Puedes encontrar el repositorio de este y otros tutoriales en <https://github.com/calderonsamuel/R_tutorial_interactivo>
+
 ### ¿Por qué aprender a programar?
+
+Puedes ver el vídeo completo, pero lo recomiendo a partir del 5:45.
 
 ![](https://youtu.be/X5Wkp1gsNik?t=346)
 
