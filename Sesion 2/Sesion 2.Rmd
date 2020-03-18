@@ -11,6 +11,7 @@ description: "Aprender el uso de vectores con atributos y estructuras de control
 library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 tutorial_options(exercise.timelimit = 5)
+Sys.setenv(TZ = "America/Lima")
 ```
 
 <style>
@@ -82,7 +83,7 @@ attributes(factor_numeros)
 
 Lo primero que debemos notar es el atributo `class`. Este será una característica común de los vectores especiales. La clase es la que determina el comportamiento que tendrán estos vectores. 
 
-## Factores
+## Tema 2: Factores
 
 ### Levels de un factor
 
@@ -104,7 +105,7 @@ as.integer(factor_manual)
 
 Es por todo ello que los *factor* son bastante utilizados para tratar con datos categóricos. El paquete `forcats` contiene funciones especializadas en hacer el trabajo con factores más sencillo.
 
-## Datetimes
+## Tema 3: Datetimes
 
 ### Dates
 
@@ -120,11 +121,257 @@ Sys.time()
 
 ### Atributos de los datetimes
 
-```{r attr_dttm}
+Del mismo modo que con los *factor*, podemos obtener los atributos de los *Datetimes*. Tengamos en cuenta que el atributo *class* puede tomar más de un valor, esto permite hacerle una sobrecarga de métodos (muy usado en programación orientada a objetos). Además de ello, podemos consultar a qué tipo de vector pertenecen. Vemos que en este caso ambos son de tipo *double*, esto signfica que internamente son números.
+
+```{r attr_dttm, exercise=TRUE}
 attributes(Sys.Date())
+typeof(Sys.Date())
+
 attributes(Sys.time())
+typeof(Sys.time())
 ```
 
+### Operaciones con datetimes
+
+Ahora que sabemos que los *datetimes* son de tipo *double*, podemos ver qué pasa si los tratamos como números[^1].
+
+```{r datetimes_operations-setup, message=FALSE, warning=FALSE}
+library(lubridate)
+Sys.setenv(TZ = "America/Lima")
+```
+
+```{r datetimes_operations, exercise=TRUE, message=FALSE, warning=FALSE}
+# Sumando quince días a la fecha actual
+Sys.Date() + 15
+
+# Restandole dos horas al tiempo actual
+Sys.time() - 7200
+```
+
+Esto sucede porque, tomando como fecha base la medianoche del 1 de enero de 1970, `Sys.Date()` cuenta los días transcurridos y `Sys.time()` cuenta los segundos transcurridos. Es por eso que internamente son vectores numéricos. 
+
+### Una pizca de lubridate
+
+El paquete [`lubridate`](https://lubridate.tidyverse.org/) contiene muchas funciones que son muy útiles para trabajar con este tipo de datos. Nos facilita, por ejemplo, sumarle años a nuestros *Datetimes*. ¿Cuántos días debo agregarle a la fecha actual para obtener la fecha de cuatro años en el futuro? Tendría que sumar a la fecha actual el resultado de multiplicar 365 por 4 y sumarle el día extra del año bisiesto. ¿Y si quisiera hacer lo mismo, pero con la hora? Tendría que multiplicar lo anterior por la cantidad de segundos en un día. Felizmente, la función `years()` de `lubridate` nos permite hacer lo mismo sin enredarnos tanto.
+
+```{r lubridate, exercise=TRUE,message=FALSE,warning=FALSE}
+library(lubridate)
+
+Sys.Date() + years(4)
+
+Sys.time() + years(4)
+```
+
+También podemos crear fechas arbitrarias con la función `dmy()`[^2] (que toma un *character* que contiene una fecha en la forma "dd/mm/yyyy") y operar con ellas. La función `today()`, hace lo mismo que `Sys.Date()` con un nombre más intuitivo.
+
+```{r lubridate2, exercise=TRUE,warning=FALSE,message=FALSE}
+library(lubridate)
+
+# Días que faltan para el 01 de enero de 2025
+dmy("01/01/2025") - today()
+```
+
+## Tema 4: Listas
+
+Los cuatro vectores que conocimos en la sesión 1 son los llamados vectores atómicos, porque pueden almacenar un tipo específico de información. Hemos conocido también los factores y datetimes, que permiten alterar el comportamiento de estos vectores atómicos. Ahora nos toca conocer las listas.
+
+### Función `list()`
+
+Las listas son objetos especiales, porque nos permiten almacenar cualquier tipo de información. Para crear una, usamos la función `list()`. Se pueden inspecionar sus elementos de la misma manera que con cualquier otro vector.
+
+```{r crear_lista, exercise=TRUE}
+mi_lista_1 <- list(1L, "Hola mundo", 3.14159, TRUE)
+
+mi_lista_1
+```
+
+Vemos que este objeto aceptó los cuatro tipos de vectores atómicos sin problema, y que al ser inspeccionado, cada elemento correspondía en sí mismo a un vector atómico.
+
+### Elementos con nombre
+
+Del mismo modo que podíamos combinar vectores atómicos con otros vectores atómicos, en las listas podemos agregar vectores creados previamente. En este caso, cada uno de ellos conserva su singularidad. Al crear la lista, podemos asignarle un nombre a cada elemento.
+
+```{r lista_elementos_con_nombre, exercise=TRUE}
+vec_integer <- 1:10
+vec_logical <- c(TRUE, FALSE, TRUE, FALSE)
+vec_double <- vec_integer/2
+vec_character <- as.character(vec_logical)
+
+mi_lista_2 <- list(enteros = vec_integer,
+                   logicos = vec_logical,
+                   decimales = vec_double,
+                   texto = vec_character)
+
+mi_lista_2
+```
+
+### Combinar listas
+
+Para combinar una lista con otra, basta con incluirlas dentro de una lista nueva. En el código de abajo, se creará una lista con dos elementos, cada uno de ellos sigue siendo una lista.
+
+```{r lista_combinada-setup}
+mi_lista_1 <- list(1L, "Hola mundo", 3.14159, TRUE)
+
+vec_integer <- 1:10
+vec_logical <- c(TRUE, FALSE, TRUE, FALSE)
+vec_double <- vec_integer/2
+vec_character <- as.character(vec_logical)
+
+mi_lista_2 <- list(enteros = vec_integer,
+                   logicos = vec_logical,
+                   decimales = vec_double,
+                   texto = vec_character)
+```
+```{r lista_combinada, exercise=TRUE}
+mi_lista_combinada <- list(mi_lista_1, mi_lista_2)
+
+mi_lista_combinada
+```
+
+Para extraer los elementos de las listas y otros tipos de vectores, es necesario conocer los operadores lógicos.
+
+## Tema 5: Operaciones lógicas
+
+Del mismo modo en que los operadores aritméticos nos permitían obtener un resultado aritmético (*aka*, numérico) en nuestros cálculos, existen otros operadores que nos permiten obtener resultados lógicos.
+
+### Operadores relacionales
+
+Los primeros de ellos son los relacionales, y ya los conocemos desde el colegio, pero es bueno saber cómo escribirlos en R. La siguiente tabla nos muestra para qué sirve cada uno de ellos.
+
+|Operador|Uso|
+|-------:|:-----|
+|`>`|Mayor que|
+|`<`|Menor que|
+|`==`|Igual que|
+|`!=`| Diferente que|
+|`>=`|Mayor o igual que|
+|`<=`|Menor o igual que|
+
+En el siguiente código encuentras ejemplos de cada uno. Al igual que operaciones aritméticas, al comparar una costante esta se recicla.
+
+```{r relacionales, exercise=TRUE}
+secuencia <- 1:10
+
+# igual que
+secuencia == 10
+
+# diferente que
+secuencia != 10
+
+# mayor que
+secuencia > 5
+
+# menor que
+secuencia < 5
+
+# mayor o igual que
+secuencia >= 5
+
+# menor o igual que
+secuencia <= 5
+```
+
+Ten cuidado al comparar vectores *character* con *numericos* porque pueden devolver resultados inesperados. No olvides que operar con un `NA` siempre devolverá `NA`. 
+
+### Operadores lógicos
+
+Para potenciar nuestras habilidades de comparación, podemos hacer uso de operadores lógicos. La siguiente tabla te muestra cuáles son:
+
+|Operador|Uso|
+|-------:|:-----|
+|`&`|Y lógico|
+|`|`|O lógico|
+|`!`|NO lógico|
+
+Aquí los podemos ver en acción:
+
+```{r logicos, exercise=TRUE}
+secuencia2 <- 1:15
+
+# Y lógico: el número debe ser mayor que cinco Y menor que 10
+secuencia2 > 5 & secuencia2 < 10
+
+# O lógico: el número debe ser menor que cinco O mayor que 10
+secuencia2 < 5 | secuencia2 > 10
+
+# NO lógico: cambia el valor de la operación
+! secuencia2 <= 10
+```
+
+## Tema 6: Subsetting
+
+Ahora que ya conocemos los operadores lógicos, podemos hacer *subsetting*. Esto no es otra cosa más que el poder de extraer elementos específicos de un vector o lista. Para ello, hacemos uso de los corchetes (`[]`). 
+
+### Subsetting con indice
+
+Teniendo un vector nombrado, colocamos los corchetes inmediatamente después del nombre del objeto e indicamos qué número (índice) de elemento deseamos extraer de nuestro objeto. Para extraer más de un elemento basta con proporcionar varios índices.
+
+```{r indice, exercise=TRUE}
+# secuencia3 contiene los cuadrados de los números del 1 al 10
+secuencia3 <- (1:10)**2
+
+# Indicando un índice
+secuencia3[1]
+
+# Múltiples índices
+secuencia3[c(1, 3, 5, 7, 9)]
+```
+
+### Subseting con vector lógico
+
+Otra manera es hacer *subsetting* es haciendo uso de un vector lógico del mismo tamaño que el del vector del que queremos extraer los elementos. Usando esta forma, resulta sumamente ventajoso usar operaciones lógicas.
+
+```{r subset_logico, exercise=TRUE}
+# secuencia4 contiene los cuadrados de los números del 11 al 20
+secuencia4 <- (11:20)**2
+
+# Subset con vector lógico
+secuencia4[c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)]
+
+# Subset con prueba lógica: obtener todos los elementos que sean mayores que 250
+secuencia4[secuencia4 > 250]
+```
+
+### Subsetting de listas
+
+También es posible extrae elementos de las listas. Cuando usamos el corchete (`[]`) obtenemos una lista con un elemento. En cambio, si queremos obtener sólo el elemento, es necesario usar doble corchete (`[[]]`). No te preocupes si es dificil comprender esto, con la práctica verás que ambos usos tienen diferentes aplicaciones.
+
+```{r subset_listas, exercise=TRUE, exercise.setup="lista_elementos_con_nombre"}
+# Inspeccionar el contenido de la lista
+mi_lista_2
+
+# Subsetting con indice
+mi_lista_2[1]
+
+# Subsetting doble corchete con indice
+mi_lista_2[[1]]
+```
+
+### Subsetting con nombres de elementos
+
+Cuando nuestro objeto tiene elementos nombrados, también podemos extraerlos haciendo uso de su nombre. Para simplificar las cosas, también podemos hacer uso del signo de dólar (`$`) como vemos en el ejemplo. Esto cumple la misma función que el doble corchete.
+
+```{r subset_nombrado, exercise=TRUE, exercise.setup = "lista_elementos_con_nombre"}
+# Subsetting con nombre
+mi_lista_2["decimales"]
+
+# Subsetting doble corchete con nombre
+mi_lista_2[["decimales"]]
+
+# Subsetting con signo de dólar
+mi_lista_2$decimales
+```
+
+## Tema 7: Bucle for
+
+## Tema 8: Control de flujo
+
+## Proyecto: Juego con "AI"
 
 
 
+
+
+
+[^1]: Fue necesario previamente usar `library(lubridate)` y definir `Sys.setenv(TZ = "America/Lima")` para trabajar con la zona horario de Lima, Perú.
+[^2]: Existen otras funciones similares en lubridate. Por ejemplo, `ymd()` hace lo mismo que `dmy()`, pero con un character de la forma "yyyy-mm-dd". Puedes inferir lo que hace `dmy_hms()` para crear horas arbitrarias.
