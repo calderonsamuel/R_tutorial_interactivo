@@ -336,7 +336,7 @@ secuencia4[secuencia4 > 250]
 
 También es posible extrae elementos de las listas. Cuando usamos el corchete (`[]`) obtenemos una lista con un elemento. En cambio, si queremos obtener sólo el elemento, es necesario usar doble corchete (`[[]]`). No te preocupes si es dificil comprender esto, con la práctica verás que ambos usos tienen diferentes aplicaciones.
 
-```{r subset_listas, exercise=TRUE, exercise.setup="lista_elementos_con_nombre"}
+```{r subset_listas, exercise=TRUE, exercise.setup="lista_combinada-setup"}
 # Inspeccionar el contenido de la lista
 mi_lista_2
 
@@ -351,7 +351,7 @@ mi_lista_2[[1]]
 
 Cuando nuestro objeto tiene elementos nombrados, también podemos extraerlos haciendo uso de su nombre. Para simplificar las cosas, también podemos hacer uso del signo de dólar (`$`) como vemos en el ejemplo. Esto cumple la misma función que el doble corchete.
 
-```{r subset_nombrado, exercise=TRUE, exercise.setup = "lista_elementos_con_nombre"}
+```{r subset_nombrado, exercise=TRUE, exercise.setup = "lista_combinada-setup"}
 # Subsetting con nombre
 mi_lista_2["decimales"]
 
