@@ -12,6 +12,7 @@ library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 tutorial_options(exercise.timelimit = 5)
 Sys.setenv(TZ = "America/Lima")
+set.seed(100)
 ```
 
 <style>
@@ -364,11 +365,285 @@ mi_lista_2$decimales
 
 ## Tema 7: Bucle for
 
+### La forma de for
+
+Los bucles o *loops* son métodos que nos permiten repetir tareas. En R, puedes hacerlo con `repeat`, `while` y `for`. Vamos a centrarnos en aprender este último.
+
+El bucle `for` nos permite ejecutar código a todos los elementos de una secuencia que sean parte de un objeto. Este proceso es también llamado *iteración*. Su escritura básica tiene la siguiente forma:
+
+```{r for_str, echo=TRUE, eval=FALSE}
+for (valor in secuencia) {
+  código
+}
+```
+
+Donde *valor* es el elemento de la *secuencia* al que se le aplicará el *código*. Veamos cómo funciona. Para imprimir cada uno de los elementos de un vector puedo usar el siguiente código.
+
+```{r alumnos}
+alumnos <- c("Amanda", "Brenda", "Charlie", "Dario")
+```
+
+
+```{r alumn, echo=TRUE,results='hold'}
+# Defino un vector con nombres de alumnos
+alumnos <- c("Amanda", "Brenda", "Charlie", "Dario")
+
+# Sé que alumnos tiene cuatro elementos
+print(alumnos[1])
+print(alumnos[2])
+print(alumnos[3])
+print(alumnos[4])
+```
+
+Pero ya sabemos que en programación, cada vez que vemos que estamos usando mucho el *copy & paste*, debe haber otra manera de hacer las cosas más fáciles. Hagamos un for loop. 
+
+```{r for_ejm1, echo=TRUE}
+for (nombre in alumnos){
+  print(nombre)
+}
+```
+ 
+Hemos obtenido el mismo resultado. Evidentemente, para un vector de cuatro elementos esto podría parecer trivial, pero si el vector `alumnos` tuviera 100 o 1 millón de elementos, el mismo `for` loop utilizado nos serviría. También tomemos en cuenta que `nombre` es un comodín para que el código sea más legible, pero el elemento podría llamarse de cualquier manera. 
+
+```{r for_ejm2, echo=TRUE}
+for (x in alumnos){
+  print(x)
+}
+```
+
+Ahora intenta hacerlo tú. Haz un print de cada elemento del vector `profesores`.
+
+```{r for_prof, echo=TRUE}
+profesores <-  c("Albus", "Minerva", "Severus", "Sybill", 
+                 "Dolores", "Alastor", "Gilderoy")
+```
+
+
+```{r for_profesores, echo=TRUE}
+profesores <-  c("Albus", "Minerva", "Severus", "Sybill", "Dolores", "Alastor", "Gilderoy")
+```
+
+
+```{r for_exe1, exercise=TRUE, exercise.setup="for_profesores"}
+# Escribe debajo de aquí tu for loop
+
+```
+
+
+### Iteración con índice
+
+Otra manera de realizar un for loop es con una secuencia numérica de índices. La función `seq_along()` nos permite obtener un vector de índices de la misma longitud del objeto que le ingresemos. 
+
+```{r seq_along, echo=TRUE}
+seq_along(alumnos)
+```
+
+Ahora que tenemos el índice, podemos iterar el for loop de una forma similar a realizar *subsetting*. En el siguiente código, `i` es un comodín para indicar el número en la secuencia.
+
+```{r for_iter1, echo=TRUE}
+for (i in seq_along(alumnos)){
+  print(alumnos[i])
+}
+```
+
+Ahora intenta hacerlo tú usando el vector `profesores`.
+
+```{r for_iter_exe, exercise=TRUE, exercise.setup="for_profesores"}
+# haz un for loop iterando en los indices
+
+
+```
+
+### Iterar en más de un objeto
+
+Para iterar en listas sólo hace falta seguir las normas adecuadas del *subsetting* (usar `[[]]`, por ejemplo).
+
+La lista `notas` contiene las calificaciones de nuestros cuatro `alumnos` en tres cursos, respectivamente.
+
+```{r notes, echo=TRUE}
+notas <- list(
+  matematica = c(20, 15, 17, 19),
+  lenguaje = c(18, 12, 11, 19),
+  ciencias = c(19, 14, 15, 17)
+)
+```
+
+```{r call_alumnos, echo=TRUE}
+alumnos
+```
+
+Podemos obtener el promedio de notas por cada curso si realizamos un for loop.
+
+```{r for_lista, echo=TRUE}
+for (i in seq_along(notas)) {
+  nota_de_curso <- mean(notas[[i]])
+  print(nota_de_curso)
+}
+```
+
+Para agregarle más detalle a nuestro análisis, podemos indicar cuál es el promedio de cada curso. Para ello, debemos obtener el nombre de cada curso. En esto nos ayuda la función `names()`, que nos devuelve un vector *character* que contiene los nombres de los elementos del objeto que ingresemos.
+
+```{r for_names, echo=TRUE}
+cursos <- names(notas)
+
+cursos
+```
+
+Ahora podemos iterar entre `nombres_de_cursos` y `notas` para obtener un resumen apropiado de las notas de cada curso. Esto lo hacemos porque sabemos que ambos tienen el mismo número de elementos.
+
+```{r for_iter_ejm2, echo=TRUE}
+for (i in seq_along(notas)) {
+  nota_de_curso <- mean(notas[[i]])
+  nombre_de_curso <- cursos[i]
+  print(paste("El promedio del curso de", nombre_de_curso, "es", nota_de_curso))
+}
+```
+
 ## Tema 8: Control de flujo
+
+### ¿Para qué control de flujo?
+
+En ocaciones queremos aplicar una función diferenciada sólo a ciertos elementos dentro de nuestros objetos. Para ello, podríamos hacer uso del *subsetting* e ir aplicando la función a nuestros subconjuntos, pero el control de flujo nos permite hacerlo de manera más sofisticada y elegante.
+
+Por ejemplo, tenemos un conjunto de 15 `calificaciones` obtenidas en un examen de admisión. 
+
+```{r flow_calificaciones, echo=TRUE}
+calificaciones <- c(79, 78, 81, 91, 91, 91, 74, 93, 57, 51, 59, 88, 70, 64, 93)
+```
+
+Queremos enviarle un mensaje personalizado a cada una de las personas que rindió el examen. Los admitidos son quienes obtubieron una nota mayor o igual que 70 puntos. Todos los demás están desaprobados. ¿Cómo podemos hacerlo?
+
+### Control if
+
+La primera herramienta es `if`, que nos permite ejecutar una pieza de código sólo si la condición necesaria es verdadera. Se escribe de la siguiente forma. 
+
+```{r if_str, echo=TRUE, eval=FALSE}
+if (condición){
+  código
+}
+```
+
+Empezemos por asignar un mensaje a sólo aquellas calificaciones que obtuvieron una nota mayor o igual a 70. Debemos hacerlo dentro de un for loop.
+
+```{r if_ejm1}
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  }
+}
+```
+
+Hemos obtenido sólo las notas que superaron la condición. Haz la prueba de obtener un mensaje para las notas que son menores que 70.
+
+```{r if_exe1-setup}
+calificaciones <- c(79, 78, 81, 91, 91, 91, 74, 93, 57, 51, 59, 88, 70, 64, 93)
+```
+
+```{r if_exe1, exercise=TRUE}
+# Modifica el código
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  }
+}
+```
+
+### Control else
+
+El siguiente paso es también darle un mensaje a quienes no aprobaron, dentro del mismo `for` loop. Para ello usaremos `else`, que ejecuta una pieza de código en todos los elementos que no cumplieron la condición de un `if`. Se escribe de la siguiente manera.
+
+```{r else_str, echo=TRUE, eval=FALSE}
+if (condición){
+  código
+} else {
+  otro código
+}
+```
+
+Por ejemplo, podemos personalizar así ambos mensajes.
+
+```{r else_ejm1, echo=TRUE}
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  } else {
+    print(paste("Lo lamentamos, obtuviste", cal, "puntos y no aprobaste"))
+  }
+}
+```
+
+Ahora cada estudiante tiene un mensaje personalizado de acuerdo a su calificación. Puedes modificar el código para cambiar los mensajes.
+
+```{r else_exe1, exercise=TRUE, exercise.setup="if_exe1-setup"}
+# Modifica el código
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  } else {
+    print(paste("Lo lamentamos, obtuviste", cal, "puntos y no aprobaste"))
+  }
+}
+```
+
+### Control else if
+
+Cuando estabas a punto de enviar los mensajes te avisaron que quienes obtuvieron un puntaje de mayor a 60 pueden tener un examen de reconsideración. Necesitas agregar un nivel más a la personalización de tu mensaje.
+
+Felizmente puedes anidar cuantas condiciones sean necesarias en tu código haciendo uso de `else if`. Esto no es más que escribir un nuevo `if` y su condición después de un `else`. Puedes agregar cuantos sean necesarios, pero no olvides terminar la cadena con un `else` para considerar cualquier otro caso que se pueda escapar.
+
+```{r elif_str, echo=TRUE, eval=FALSE}
+if (condición1){
+  código
+} else if (condición2) {
+  otro código
+} else {
+  otro código más
+}
+```
+
+Agreguemos un mensaje personalizado para quienes obtuvieron una mayor que 60.
+
+```{r elif_ejm1, echo=TRUE}
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  } else if (cal > 60) {
+    print(paste("Ven a un examen nuevo porque obtuviste", cal, "puntos"))
+  } else {
+    print(paste("Lo lamentamos, obtuviste", cal, "puntos y no aprobaste"))
+  }
+}
+```
+
+Puedes modificar los mensajes o agregar una nueva condición en la caja de ejercicio.
+
+```{r elif_exe1, exercise=TRUE, exercise.setup="if_exe1-setup"}
+for (cal in calificaciones){
+  if(cal >= 70){
+    print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))
+  } else if (cal > 60) {
+    print(paste("Ven a un examen nuevo porque obtuviste", cal, "puntos"))
+  } else {
+    print(paste("Lo lamentamos, obtuviste", cal, "puntos y no aprobaste"))
+  }
+}
+```
 
 ## Proyecto: Juego con "AI"
 
+1. Crea una función `mayor_de_edad()` que tome una `fecha_de_nacimiento` en la forma "dd/mm/yyyy" y arroje `TRUE` si alguien nacido en esa fecha es mayor de edad, y `FALSE` si es lo contrario. Puedes usar las funciones de `lubridate` para ello.
 
+2. Crea una función `ataque()` que tome un argumento numérico `fuerza`. Si `fuerza`es mayor a 100 debes imprimir un mensaje que diga `"Mataste al enemigo"`, si `fuerza` es mayor a 70 debes imprimir `"El enemigo quedó muy herido"` y en cualquier otro caso debe imprimir `"El enemigo no sintió ni cosquillas"`.
+3. Crea una función `juego()` con dos argumentos: `fecha_de_nacimiento` (una fecha en formato "dd-mm-yyyy") y `fuerza`, un valor numérico de tu ataque. Si la fecha de nacimiento no corresponde a una persona mayor de edad (utiliza `mayor_de_edad()` para corroborarlo), se debe imprimir el mensaje `"Regresa cuando tengas DNI"`, en cualquier otro caso, se debe  usar un `ataque()` con la fuerza indicada.
+
+```{r proyecto_sesion_2, exercise=TRUE}
+
+```
+
+***
+Opcional
+
+1. Crea la función `juego2()`, con los mismos argumentos que `juego()`, pero sin crear primero `mayor_de_edad()` ni `ataque()`.
 
 
 
