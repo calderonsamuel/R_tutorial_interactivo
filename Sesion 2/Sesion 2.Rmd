@@ -12,7 +12,6 @@ library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 tutorial_options(exercise.timelimit = 5)
 Sys.setenv(TZ = "America/Lima")
-set.seed(100)
 ```
 
 <style>
@@ -525,7 +524,7 @@ if (condición){
 
 Empezemos por asignar un mensaje a sólo aquellas calificaciones que obtuvieron una nota mayor o igual a 70. Debemos hacerlo dentro de un for loop.
 
-```{r if_ejm1}
+```{r if_ejm1, echo=TRUE}
 for (cal in calificaciones){
   if(cal >= 70){
     print(paste("¡Obtuviste", cal, "puntos y aprobaste!"))

@@ -23,4 +23,4 @@ juego <- function(fecha_de_nacimiento, fuerza){
 }
 
 # probando el juego
-juego("17/08/2011", 120)
+juego("17/08/2001", 90)

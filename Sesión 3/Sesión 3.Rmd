@@ -1,0 +1,785 @@
+---
+title: "Sesión 3"
+output: 
+  learnr::tutorial:
+    progressive: true
+    df_print: 'default'
+runtime: shiny_prerendered
+description: "Aprender el uso de data.frames y funciones de dplyr"
+---
+
+```{r setup, include=FALSE, message=FALSE,warning=FALSE}
+library(learnr)
+library(dplyr)
+library(gapminder)
+library(nycflights13)
+knitr::opts_chunk$set(echo = TRUE)
+tutorial_options(exercise.timelimit = 5, exercise.eval = TRUE)
+Sys.setenv(TZ = "America/Lima")
+
+gapminder_subset <- filter(gapminder, 
+       country %in% c("Peru", "Chile", "Colombia", "Ecuador"),
+       year >= 2002)
+```
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+## Tema 1: Dataframes
+
+### ¿Qué es un data.frame?
+
+Un *data.frame* es una versión bi-dimensional de una lista, lo que ocasiona que se comporte de manera similar a una tabla. Debido a que esa estructura facilita mucho su comprensión de manera visual y amacenamiento, su uso es muy extendido en el análisis de datos. 
+
+Fuera de R, los programas más conocidos que también almacenan sus datos tabularmente son Excel, Google Sheets y SPSS. Es una de las razones por las que resulta muy sencillo trasladar el trabajo realizado en esos programas hacia R.
+
+Es muy común referirse a un data.frame como `df`, en forma abreviada.
+
+### Crear un data.frame
+
+El proceso para crearlos es muy similar al de una lista nombrada. En el siguiente código, estamos creando el objeto `df`, conformado por tres vectores de cinco elementos cada uno.
+
+```{r df_crear}
+df <- data.frame(
+  columna1 = 1:5,
+  columna2 = c("uno", "dos", "tres", "cuatro", "cinco"),
+  columna3 = c("one", "two", "three", "four", "five")
+  )
+
+df
+```
+
+En un data.frame, cada vector se convierte en una columna, con cada uno de sus elementos convirtiéndose en una fila, en el orden en que aparecen. Además de eso, el número de fila nos aparece automáticamente como una columna sin nombre.
+
+### Obtener un data.frame a partir de una lista
+
+Para obtener un data.frame a partir de una lista podemos usar la función `as.data.frame()` poniéndole como argumento nuestra lista.
+
+```{r df_from_list}
+notas <- list(
+  matematica = c(20, 15, 17, 19),
+  lenguaje = c(18, 12, 11, 19),
+  ciencias = c(19, 14, 15, 17)
+)
+
+df_notas <- as.data.frame(notas)
+
+df_notas
+```
+
+Podemos identificar los data.frame porque poseen la clase "data.frame",
+
+```{r df_class}
+class(df_notas)
+```
+
+### Obtener un data.frame a partir de vectores
+
+Al igual que con una lista, puedo obtener los elementos (columnas) de mi data.frame a partir de vectores creados previamente. En este caso, la columna heredará el nombre del objeto a partir del cual es creado.
+
+```{r df_from_vector}
+alumnos <- c("Amanda", "Brenda", "Charlie", "Dario")
+sexo <- c("F", "F", "M", "M")
+
+df_alumnos <- data.frame(alumnos, sexo)
+
+df_alumnos
+```
+
+### Crea tu primer data.frame
+
+Ahora es tu turno. Crea un data.frame de tres columnas usando cualquiera de los métodos descritos.
+
+```{r df_exe1, exercise = TRUE}
+
+```
+
+## Tema 2: Trabajar con data.frames
+
+### Dimensiones
+
+Como dijimos en un principio, los data.frames son listas bi-dimensionales. Por ello, podemos consultar por la extensión de ambas dimensiones. Para ello, usaremos la función `dim()`. 
+
+```{r df_dim}
+dim(df_notas)
+```
+
+Nos devuelve un vector de dos elementos, que contienen el número de filas y el número de columnas, respectivamente. Sin embargo, es posible obtener sólo el número de filas o de columnas usando `nrow()` o `ncol()`, respectivamente.
+
+```{r df_nrow_ncol}
+nrow(df_notas)
+ncol(df_notas)
+```
+
+Internamente, ambas funciones son simplemente un subsetting del vector obtenido por `dim()`. Veamos cómo está definido `nrow()`
+
+```{r df_nrow_internal}
+nrow
+```
+
+### Consulta dimensiones
+
+Ahora es tu turno. Consulta las dimensiones del data.frame `df_alumnos`.
+
+```{r df_dim_exe1, exercise=TRUE, exercise.lines=13}
+alumnos <- c("Amanda", "Brenda", "Charlie", "Dario")
+sexo <- c("F", "F", "M", "M")
+df_alumnos <- data.frame(alumnos, sexo)
+
+# Consulta ambas dimeniones
+
+
+# Consulta sólo el número de filas
+
+
+# Consulta sólo el número de columnas
+
+```
+
+### Reglas de reciclaje de vectores
+
+¿Recuerdas lo que pasaba al operar un vector contra una constante?
+
+```{r reci_ejm1}
+1:10 * 10
+```
+
+La constante automáticamente es *reciclada* para trabajar con cada elemento del vector más largo. Esto sucede al operar cualquier tipo de vector.
+
+```{r reci_ejm2}
+paste("Texto reciclado N°", 1:10)
+```
+
+En este punto, es importante entender que esto sucede no sólo cuando se opera con una constante, los vectores pequeños siempre se reciclan *hasta alcanzar el tamaño del vector más grande*. Esto hace posible que el siguiente código no falle. 
+
+```{r reci_ejm3}
+data.frame(
+  colegio = "Fe y Alegría",
+  aula = c("A", "B"),
+  estudiante = c("Amanda", "Adolfo", "Alejandro", "Astrid")
+)
+```
+
+A pesar de que a primera vista este comportamiento parezca conveniente, nos abre la puerta a errores indeseados cuando creamos data.frames con columnas cuyo número de elementos no son múltiplos entre sí.
+
+```{r reci_ejm4, error=TRUE}
+data.frame(
+  colegio = "Fe y Alegría",
+  aula = c("A", "B"),
+  estudiante = c("Amanda", "Adolfo", "Alejandro", "Astrid"),
+  distrito = c("Lince", "Ate", "Comas", "Breña", "Cercado", "Magdalena")
+)
+```
+
+Debido a ello, es necesario ser extremadamente cuidadosos al trabajar con vectores de diferentes tamaños, de preferencia evitando trabajar con el reciclaje de vectores a menos que se esté utilizando una constante.
+
+### Subsetting tipo lista
+
+Para hacer subsetting de un data.frame usaremos el mismo operador que para las listas (`[]`).
+
+```{r df_subset_ejm1}
+# Un corchete + índice devuelve un data.frame con una columna
+df_notas[3]
+
+# Un corchete + nombre devuelve un data.frame con una columna
+df_notas["ciencias"]
+
+# Doble corchete + índice devuelve el contenido de la columna
+df_notas[[3]]
+
+# Doble corchete + nombre devuelve el contenido de la columna
+df_notas[["ciencias"]]
+
+# Signo de dólar devuelve el contenido de la columna
+df_notas$ciencias
+```
+
+### Subsetting de dos dimensiones
+
+Sin embargo, un data.frame también nos permite hacer subsetting en las filas y columnas al mismo tiempo. Toma en cuenta la siguiente forma:
+
+```{r df_subset_ejm2, eval=FALSE}
+df[filas, columnas]
+```
+
+Si quiero obtener las filas 1 y 2 de `df_notas` debo espeficar esos números *antes* de la coma dentro de los corchetes. Cuando no especifico las columnas, R asume que quiero obtener todas.
+
+```{r df_subset_ejm3}
+# Obtener las notas 1 y 2 de todas las columnas
+df_notas[1:2,]
+```
+
+Si deseo seguir obtiendo las mismas filas, pero sólo de las columnas 2 y 3 de `df_notas`, especifico esas columnas.
+
+```{r df_subset_ejm4}
+# Obtener las notas 1 y 2 de las columnas 2 y 3
+df_notas[1:2, 2:3]
+```
+
+Puedo seguir haciendo subsetting de columnas especificando sus nombres.
+
+```{r df_subset_ejm5}
+# Obtener las notas 1 y 2 de los cursos de lenguaje y ciencias
+df_notas[1:2, c("lenguaje", "ciencias")]
+```
+
+Y para las filas, puedo utilizar pruebas lógicas para escoger mis elementos. Aquí el operador de signo de dolar resulta especialmente útil, porque puedo realizar la prueba lógica de una columna del data.frame del que deseo hacer subsetting. 
+
+```{r df_subset_ejm6}
+# Obtener todas las notas de quienes sacaron mayor a 15 en lenguaje 
+df_notas[df_notas$lenguaje > 15, ]
+```
+
+### head() y tail()
+
+Hasta el momento, hemos trabajado con data.frames pequeños. Normalmente, nuestros datos pueden llegar a tener una gran cantidad de filas y columnas. El data.frame `alfabeto` contiene dos columnas, cada una contiene las 26 letras del alfabeto (inglés) en mayúsculas y minúsculas, respectivamente.
+
+```{r cont_alfabeto}
+alfabeto <- data.frame(LETTERS, letters)
+
+dim(alfabeto)
+```
+
+Al inspeccionar su contenido obtenemos:
+
+```{r cont_ejm1}
+alfabeto
+```
+
+Todos los elementos del data.frame aparecen en nuestra pantalla. Con un conjunto de datos de 26 filas esto aún es manejable, pero imagina que estás trabajando con miles o millones de datos, imprimir todos los elementos en tu pantalla no sólo es molesto sino también inútil.
+
+Felizmente, puedes hacer uso de la función `head()`. Por defecto, imprimirá las seis primeras filas del data.frame que le ingresemos, pero podemos especificar otro número.
+
+```{r head}
+# Seis primeras filas por defecto
+head(alfabeto)
+
+# Especificando el número de filas requerido
+head(alfabeto, 8)
+```
+
+Si lo queremos es ver las últimas filas del data.frame, podemos hacer uso de la función `tail()`. Nuevamente, por defecto imprime las seis últimas filas, pero se le puede especificar otra cantidad.
+
+```{r tail}
+# Seis últimas filas
+tail(alfabeto)
+
+# Especificando el número de filas requerido
+tail(alfabeto, 3)
+```
+
+### Crear head2()
+
+Es tu turno. Crea una función `head2()` que tome dos argumentos: un `dataframe` y un número `n` de filas a imprimirse. Es posible lograrlo haciendo subsetting en el data.frame. No olvides su forma general:
+
+```{r df_subset_general, eval=FALSE}
+# Forma general del subsetting de un data.frame
+df[filas, columnas]
+```
+
+El data.frame `alfabeto` puede ser usado para probar el funcionamiento de `head2()`.
+
+```{r head2-setup}
+alfabeto <- data.frame(LETTERS, letters)
+```
+
+```{r head2, exercise=TRUE}
+# Crea head2()
+```
+
+## Tema 3: Tibbles
+
+### ¿Qué son los tibbles?
+
+Así como los data.frames son listas que se comportan de manera especial, los *tibbles* son data.frames que se comportan de manera especial. Vamos a conocer de qué manera lo hacen, y por qué es preferible trabajar con ellos.
+
+Ten encuenta que para ello es necesario utilizar el paquete `tibble`.
+
+```{r tibble, eval=FALSE}
+library(tibble)
+```
+
+Los tibble son objetos ampliamente utilizados en la actualidad y son parte fundamental del [*tidyverse*](https://www.tidyverse.org/), un conjunto de paquetes que comparten una filosofía en común, con el fin de hacer el análisis de datos más accesible y reproducible. Esta filosofía es visiblemente respaldada por los desarrolladores de RStudio. Debido a esta popularidad , es bastante probable que cuando veas que alguien está hablando de un data.frame, en realidad se esté refiriendo a un tibble.
+
+### Crear un tibble a partir de un data.frame
+
+Convertir un data.frame existente en un tibble es bastante sencillo. Basta con colocar nuestro data.frame dentro de `as_tibble()`[^1].
+
+```{r tbl_notas}
+tbl_notas <- as_tibble(df_notas)
+
+tbl_notas
+```
+
+En los tibble, el tipo de columna aparece debajo del encabezado. Esto nos permite tener una idea rápida de la composición de los datos. 
+
+### Tibbles a partir de listas
+
+Es posible también crear tibbles a partir de listas. Recordemos que originalmente teníamos la lista `notas`.
+
+```{r list_notas}
+notas
+```
+
+Podemos usar `as_tibble()` directamente en una lista para crear un tibble, sin necesidad de que la lista se convierta primero en un data.frame.
+
+```{r tbl_notas_2}
+as_tibble(notas)
+```
+
+### Crear tibbles desde cero
+
+En realidad, no necesitamos crear ningún objeto antes de nuestro tibble. La función `tibble()` nos permite crearlo directamente, de manera similar a como creamos un data.frame. 
+
+```{r tbl_tibble}
+tibble(
+  enteros = 1:10,
+  decimales = enteros/2 
+)
+```
+
+Sin embargo, es posible crear un tibble usando una sintaxis diferente con la función `tribble()`. 
+
+```{r tribble}
+tribble(
+  ~colA, ~colB,
+  "a",   1,
+  "b",   2,
+  "c",   3
+)
+```
+
+### La clase tibble
+
+Como aprendimos en la sesión 2 de este curso, el atributo que ocasiona que un objeto en R se comporte de manera especial es la clase. Además de la clase "data.frame", los tibble contiene las clases "tbl_df" y "tbl".
+
+```{r tbl_class}
+class(tbl_notas)
+```
+
+Cuando nuestro df es pequeño, ya hemos visto que nos indica el tipo de columna debajo de su encabezado. Si hemos prestado atención, también habremos podido ver que nos muestra sus dimensiones antes del encabezado. Esto es muy útil en los tibble, porque por defecto no imprimen el df completo, sino sólo las diez primeras filas.
+
+Recordemos el df `alfabeto`, contiene las 26 letras del alfabeto, en mayúsculas en su primera columna y en minúsculas en la segunda. Vamos a crear una versión tibble de este data.frame.
+
+```{r tbl_alfabeto}
+tbl_alfabeto <- as_tibble(alfabeto)
+```
+
+Comparemos cómo son impresos.
+
+```{r tbl_print}
+# Impresión de data.frame
+alfabeto
+
+# Impresión de tibble
+tbl_alfabeto
+```
+
+A pesar de que no se imprime el tibble completo, nos da las señales suficientes para saber que contiene 26 filas y dos columnas. Sin embargo, algo más debe llamarnos la atención. Ambas columnas son descritas como "<fct>" o factor.
+
+Esto sucede porque la función `data.frame()` convierte por defecto todos los character a factor[^2]. Al ser creado un df directamente con la función `tibble()`, este problema no se repite.
+
+```{r tbl_tibble2}
+tibble(LETTERS, letters)
+```
+
+Otra diferencia se da en la inspección de las columnas. Como sabemos, los data.frame imprimen todo su contenido, incluyendo la cantidad total de columnas, en cambio los tibble sólo imprimen las columnas que caben en nuestra pantalla, dando un mensaje informativo al respecto. Veamos el ejemplo del dataset `flights`, contenido en el paquete `nycflights13`.
+
+```{r flights}
+library(nycflights13)
+
+flights
+```
+
+Vemos que es un tibble con 336776 filas y 19 columnas. Por comodidad, el tibble sólo imprimió las diez primeras filas, y las columnas que no alcanzaron en la pantalla están descritas debajo, con su nombre y su tipo. 
+
+### Crea tu propio tibble
+
+Ahora es tu turno, recrea el siguiente tibble. Puedes hacerlo usando el método que quieras.
+
+```{r tbl_imdb, echo=FALSE}
+tibble(
+  actor = c("Leonardo DiCaprio", "Brad Pitt", "Margot Robbie", "Emile Hirsch"),
+  papel = c("Rick Dalton", "Cliff Booth", "Sharon Tate", "Jay Sebring")
+)
+```
+
+
+```{r tbl_exe1, exercise = TRUE}
+# Crea tu tibble
+```
+
+
+## Tema 4: Paquete dplyr
+
+Hemos aprendido a crear tibbles y data.frames. Lo siguiente es aprender a utilizarlos. De ahora en adelante, nuestros ejemplos sólo utilizarán tibbles y me referiré a ellos como "df".
+
+### ¿Qué es dplyr?
+
+Es un paquete para R que nos permite trabajar con mayor facilidad nuestros datos tabulares. Para poder usar sus funciones, debemos cargar el paquete. Como forma parte de los paquetes del tidyverse, podemos cargar todos juntos a la vez.
+
+```{r dplyr, eval=FALSE}
+# Para cargar sólo dplyr
+library(dplyr)
+
+# Para cargar todo el tidyverse
+library(tidyverse)
+```
+
+En resumen, sus funciones nos permiten realizar las siguientes tareas:
+
+- Elegir observaciones de acuerdo a sus valores (`filter()`).
+- Reordenar las filas (`arrange()`).
+- Elefir variables por su nombre (`select()`).
+- Crear nuevas variables usando funciones en variables existentes (`mutate()`).
+- Reducir muchos valores a datos de resumen (`summarise()`).
+
+Usaremos como ejemplo el dataset `gapminder` del paquete `gapminder`. 
+
+```{r mpg}
+library(gapminder)
+
+gapminder
+```
+
+Contiene información de la expectativa de vida (lifeExp), población (pop) y el PBI per cápita (gdpPercap) de 142 países de 1952 a 2007.
+
+### filter()
+
+Cuando aprendimos subsetting, vimos que es posible obtener un subconjunto de mis datos en base a sus valores, con el uso de pruebas lógicas dentro del corchete (`[]`). 
+
+La función `filter()` nos simplifica esa tarea. Podemos elegir obtener sólo la información referida a Perú por ejemplo. El primer argumento de `filter()` es el df que queremos filtrar, y los siguientes argumentos son las pruebas lógicas que le queremos aplicar. 
+
+```{r filter_ejm1}
+filter(gapminder, country == "Peru")
+```
+
+Dentro de `filter()`, R entiende que `country` se refiere a la columna `country` del df `gapminder` y sólo filtra aquellos elementos dentro de esa columna que son iguales a `"Peru"`.
+
+Es posible añadir más de una condición. Supongamos que queremos la información de Perú, pero sólo a partir del año 1992.
+
+```{r filter_ejm2}
+filter(gapminder, country == "Peru", year >= 1992)
+```
+
+Añadir una nueva prueba lógica funciona igual que utilizar el operador `&&`. Evidentemente, aún podemos utilizar otros operadores lógicos. Supongamos que queremos obtener la data a partir de 1992 para Perú y Chile.
+
+```{r filter_ejm3}
+filter(gapminder, 
+       country == "Peru" | country == "Chile", 
+       year >= 1992)
+```
+
+Si quiero obtener la información de varios países, puedo ahorrarme algo de tipeo usando `%in% dentro de `filter()`. Esta vez le pediré los datos a partir del 2002. Guardaré este subset para usarlo más adelante.
+
+```{r filter ejm4}
+gapminder_subset <- filter(gapminder, 
+       country %in% c("Peru", "Chile", "Colombia", "Ecuador"),
+       year >= 2002)
+
+gapminder_subset
+```
+
+### arrange()
+
+La utilidad de `arrange()` es que nos permite ordenar nuestros datos en base a las variables que escojamos. Recuerda nuestro subset de gapminder.
+
+```{r gapminder_subset}
+gapminder_subset
+```
+
+Está ordenado por el orden alfabético de la columna `country`. Podemos indicarle que se ordene por año.
+
+```{r arrange_ejm1}
+arrange(gapminder_subset, year)
+```
+
+Ahora aparecen primero los datos del 2002 y luego los del 2007. Por defecto, el orden se hace en forma ascendente. Si uso la función `desc()` rodeando la columna elegida, ocurre lo contrario.
+
+```{r arrange_ejm2}
+arrange(gapminder_subset, desc(year))
+```
+
+Puedo ordenar en base a más de una columna, sólo debo agregarla como otro argumento. Por ejemplo, si quiero ver el orden en las expectativas de vida por año.
+
+```{r arrange_ejm3}
+arrange(gapminder_subset, year, lifeExp)
+```
+
+En ambos años, Perú tuvo la expectativa de vida más baja.
+
+
+### select()
+
+La función `select()` nos permite seleccionar columnas específicas de nuestro df. Supongamos que sólo queremos los nombres de los países, el año y el total de población. Podemos hacerlo con `select()`.
+
+```{r select_ejm1}
+select(gapminder_subset, country, year, pop)
+```
+
+Sólo hace falta indicar como argumentos de `select()` el nombre de las variables a escoger. Además de eso select nos permite cambiar en el momento el nombre de nuestras variables.
+
+```{r select_ejm2}
+select(gapminder_subset, 
+       pais = country, 
+       año =year, 
+       poblacion = pop)
+```
+
+Si lo que deseo es excluir una variable, debo anteponerle un signo negativo.
+
+```{r select ejm3}
+select(gapminder_subset, -continent)
+```
+
+### mutate()
+
+En muchas oportunidades, lo que voy a necesitar es crear nuevas variables. Para ello puedo utilizar `mutate()`. Por ejemplo, multiplicando los datos de población y PBI per cápita es posible para mí obtener el PBI total de un país. 
+
+```{r mutate_ejm1}
+mutate(gapminder_subset, 
+       PBI_total = pop * gdpPercap)
+```
+
+La operación realizada dentro de `mutate()` itera automáticamente a través de las filas de las variables seleccionadas para obtener el resultado. Es por ello que también es posible operador en ellas usando una constante. `mutate()` además permite usar múltiples transformaciones en una sola llamada, incluso utilizando variables recién creadas.
+
+```{r mutate_ejm2}
+mutate(gapminder_subset, 
+       PBI_total = pop * gdpPercap,
+       PBI_total = paste("PBI de",country,"en",year,":",PBI_total,"dólares")
+       )
+```
+
+### summarise()
+
+Lo siguiente a aprender es el uso de `summarise()`. Es una función que nos permite obtener datos resumen de nuestras variables. Algo a tener en cuenta es que al hacer nuestro df sólo retendrá los datos de resumen, obviando la data de la cual fueron obtenidos. Los ejemplos dejarán esto más claro.
+
+Por ejemplo, podemos obtener el recuento de observaciones de nuestra tabla si usamos `n()`[^3]. En el mismo código podemos asignarle un nombre a la columna, en este caso le ponemos `recuento`.
+
+```{r summarise_n}
+summarise(gapminder_subset, recuento = n())
+```
+
+Podemos obtener cualquier otro tipo de resumen, por ejemplo, el promedio de expectativa de vida para el periodo escogido. Llamaremos `promedio` a esta columna.
+
+```{r summarise_mean}
+summarise(gapminder_subset, promedio = mean(lifeExp))
+```
+
+Naturalmente, es posible crear más de una variable resumen al mismo tiempo, incluso es posible crearla en referencia a una creada previamente en el mismo código.
+
+```{r summarise_varios}
+summarise(gapminder_subset, 
+          recuento = n(),
+          promedio = mean(lifeExp),
+          resumen = paste("La expectativa de vida de las", 
+                          recuento,
+                          "observaciones es",
+                          promedio))
+```
+
+Existe una gran cantidad de datos de resumen que se pueden obtener en nuestro análisis, pero no siempre vamos a querer que los datos sean generales. En la siguiente sección aprenderas a resumir datos agrupados.
+
+### group_by()
+
+La función `group_by()` nos permite seleccionar variables para agruparlas y obtener datos de resumen diferenciados. Aunque es posible utilizarla en conjunto con otras funciones de `dplyr()`, usarla junto con `summarise()` nos demuestra claramente su poder.
+
+Podemos obtener el recuento de observaciones por país si primero agrupamos nuestros datos. Ten en cuenta que los datos permanecerán agrupados hasta que le indiquemos al df que se debe desagrupar, a través de `ungroup()`.
+
+```{r group_by_recuento}
+gapminder_subset <- group_by(gapminder_subset, country)
+summarise(gapminder_subset, recuento = n())
+gapminder_subset <- ungroup(gapminder_subset)
+```
+
+Del mismo modo, podemos obtener el promedio de expectativa de vida, pero esta vez diferenciado por país.
+
+```{r group_by_promedio}
+gapminder_subset <- group_by(gapminder_subset, country)
+summarise(gapminder_subset, promedio = mean(lifeExp))
+gapminder_subset <- ungroup(gapminder_subset)
+```
+
+También es posible usar más de una variable de agrupación. Por ejemplo, en `gapminder` original, podemos obtener el promedio de expectativa de vida por continente y año de observación.
+
+### sandbox
+
+```{r sandbox, exercise = TRUE}
+gapminder <- group_by(gapminder, continent, year)
+summarise(gapminder, promedio = mean(lifeExp))
+gapminder <- ungroup(gapminder)
+```
+
+## Tema 5: El operador pipe
+
+### ¿Qué hace un pipe?
+
+Para finalizar, es importante notar una característica común entre todas las funciones de `dplyr()` que hemos conocido: el primer argumento siempre es el df al que se le va a aplicar la transformación. Esta es una característica consistente con todos los paquetes del `tidyverse`, que permite tener un flujo de trabajo *pipeable*.
+
+Lo que esto quiere decir concretamente es que las funciones se pueden encadenar a través de un operador llamado *pipe* (`%>%`), cuyo valor en el lado izquierdo se convierte en el primer argumento de la función del lado derecho. 
+
+```{r pipe ejm1}
+# Uso original de una función de promedio
+mean(1:10)
+
+# Uso de pipe para función de promedio
+1:10 %>% mean()
+```
+
+Usar *pipe* para una sola función no resulta muy productivo. Pero es posible encadenar cuantas funciones sean necesarias en tu flujo de trabajo. 
+
+### El paquete magrittr
+
+El *pipe* fue diseñado originalmente en el paquete `magrittr`, que viene con algunas funciones *pipeables* que pueden reemplazar a los operadores aritméticos de R. 
+
+Piensa en la siguiente operación:
+
+```{r operacion}
+(((12 * 5) - 11)/ 7) + 3
+```
+
+Para obtener el resultado, se realizan una serie de pasos:
+
+1. El número inicial es 12
+2. Luego se le multiplica por 5
+3. Luego se le resta 11
+4. Luego se le divide entre 7
+5. Luego se le suma 3
+
+Aunque este no es un flujo cotidiano de trabajo, sirve para ilustrar el uso de *pipes*. Podemos reescribir los pasos de la siguiente manera usando las funciones de `magrittr`. 
+
+```{r magrittr}
+library(magrittr)
+```
+
+Tenemos tres opciones:
+
+1. Llamar las funciones dentro de las otras funciones. Nótese que la primera operación va en el nivel más profundo, empezando desde el 12. Además, toda la operación podría haber cabido en una línea de código, pero sería incluso más dificil de leer.
+
+```{r pipe_in_function}
+add(
+  divide_by(
+    subtract(
+      multiply_by(12, 
+                  5), 
+      11), 
+    7), 
+  3)
+```
+
+2. Crear objetos intermedios. Esto parece más entendible y al leerlo se sigue la estructura de pasos descritos anteriormente. Vemos que al igual que con las funciones de `dplyr`, las funciones de `magrittr` siempre tienen el mismo primer argumento: el objeto a transformar.
+
+```{r pipe_objeto_intermedio}
+
+numero <- 12
+numero <- multiply_by(numero, 5)
+numero <- subtract(numero, 11)
+numero <- divide_by(numero, 7)
+numero <- add(numero, 3)
+numero
+```
+
+3. Encadenar todo usando *pipes*. No se crean objetos intermedios y el operador `%>%` puede leerse como *luego*. Obtengo 12, luego lo multiplico por 5, luego le resto 11, luego lo divido entre 7, luego le aumento 3.  
+
+```{r pipe_flow}
+12 %>% 
+  multiply_by(5) %>% 
+  subtract(11) %>% 
+  divide_by(7) %>% 
+  add(3)
+```
+
+Hemos conseguido el mismo resultado de tres maneras distintas, pero usando *pipes* hemos encadenado varias funciones una tras otra sin sacrificar la legibilidad de nuestro código.
+
+### Usar pipes con las funciones de dplyr
+
+Una vez entendido el uso de *pipes*, podemos aplicarlo a nuestro análisis de datos. Seguimos trabajando con `gapminder`. 
+
+```{r gapminder_call}
+gapminder
+```
+
+En `gapminder` tengo todo lo necesario para obtener el ranking del promedio del PBI nacional para cada uno de los cinco continentes en los años 1987 y 2007 (esto me permitirá comparar los cambios en la economía mundial en esos treinta años). Para ello voy a requerir usar todas las funciones que aprendí en el Tema 4 de este tutorial. Primero lo haremos paso por paso y luego convertiremos todo en el flujo de unos cuantos *pipes*.
+
+Debido a que sólo necesito los años 1987 y 2007, filtro mis datos. Al objeto modificado lo llamaré `gapminder_modificado`.
+
+```{r gapminder_flow1}
+gapminder_modificado <- filter(gapminder, year %in% c(1987, 2007))
+
+gapminder_modificado
+```
+
+El siguiente paso es quedarme sólo con las variables que necesito. En este caso son continente, año, PBI per cápita y población.
+
+```{r gapminder_flow2}
+gapminder_modificado <- select(gapminder_modificado,
+                               continent, year, gdpPercap, pop)
+gapminder_modificado
+```
+
+A continuación, debo obtener el PBI nacional multiplicando el PBI per cápita por la población.
+
+```{r gapminder_flow3}
+gapminder_modificado <- mutate(gapminder_modificado,
+                               PBI_nacional = pop * gdpPercap)
+
+gapminder_modificado
+```
+
+Ahora que tengo el PBI nacional, puedo obtener el promedio por año y continente.
+
+```{r gapminder_flow4}
+gapminder_modificado <- group_by(gapminder_modificado,
+                                 continent, year)
+gapminder_modificado <- summarise(gapminder_modificado,
+                                  promedio = mean(PBI_nacional))
+gapminder_modificado <- ungroup(gapminder_modificado)
+
+gapminder_modificado
+```
+
+Ahora sólo me falta ordenar mis datos de manera descendente según el promedio del PBI. 
+
+```{r gapminder_flow5}
+gapminder_modificado <- arrange(gapminder_modificado, 
+                                year, desc(promedio))
+
+gapminder_modificado
+```
+
+Listo. Con el flujo de análisis terminado, puedo verificar que en esos treinta años, Asia superó a Europa en el promedio de su PBI nacional.
+
+### Reescribiendo el flujo con pipes
+
+Podemos hacer todo el análisis anterior con un solo *pipeline*.
+
+```{r gapminder_pipeline}
+gapminder %>% 
+  filter(year %in% c(1987, 2007)) %>%
+  select(continent, year, gdpPercap, pop) %>% 
+  mutate(PBI_nacional = pop * gdpPercap) %>% 
+  group_by(continent, year) %>% 
+  summarise(promedio = mean(PBI_nacional)) %>% 
+  ungroup() %>% 
+  arrange(year, desc(promedio))
+```
+
+Hemos obtenido el mismo resultado escribiendo mucho menos código y sin crear ningún objeto intermedio. 
+
+## Proyecto: Tu propio pipeline
+
+Utilizando `gapminder`, obtén el ranking del PBI nacional de Perú, México, Colombia y Chile en los años 1967, 1987 y 2007. Los paquetes `gapminder`y `dplyr` se encuentran cargados para ti, no necesitas usar `library()`.
+
+```{r proyecto, exercise=TRUE}
+
+```
+
+
+
+
+[^1]: Una de las características más claras de las funciones desarrolladas por el equipo del tidyverse es el uso del *snake_case*,  los nombres de las funciones van en minúsculas y como separador se usa el sub guión.
+[^2]: A partir de R versión 4.0.0, los data.frames creados con `data.frame()` o `read.table()` ya no convertirán characters a factor por defecto.
+[^3]: La función `n()` funciona dentro de una llamada a `summarise()`, evita usarla en cualquier otro contexto.

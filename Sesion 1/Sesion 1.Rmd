@@ -9,8 +9,11 @@ description: "Aprender los elementos básicos de la programación con R"
 
 ```{r setup, include=FALSE}
 library(learnr)
+library(gradethis)
 knitr::opts_chunk$set(echo = FALSE)
-tutorial_options(exercise.timelimit = 5, exercise.completion = FALSE)
+tutorial_options(exercise.timelimit = 5, 
+                 exercise.completion = FALSE, 
+                 exercise.checker = gradethis::grade_learnr)
 ```
 
 <style>
@@ -50,11 +53,20 @@ Los operadores, como dice su nombre, nos permiten realizar operaciones entre cie
 
 Podemos ver cómo lucen los operadores en funcionamiento al usarlos en R. 
 
-*Realiza alguna operación aritmética*
-
 ```{r aritmeticos, exercise=TRUE}
+# Realiza la siguiente operación: 10 * 15 - 50 / 25
+
 
 ```
+
+```{r aritmeticos-check}
+grade_result(
+  pass_if(x = ~ identical(.result, 148)),
+  correct = "¡Lo hiciste muy bien!",
+  incorrect = "Vuelve a revisar el código"
+)
+```
+
 
 ### Quiz aritmético
 
