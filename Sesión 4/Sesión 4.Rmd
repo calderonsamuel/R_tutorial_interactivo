@@ -1,5 +1,5 @@
 ---
-title: "Sesión 4"
+title: "Sesion 4"
 output: 
   learnr::tutorial:
     progressive: true
@@ -17,9 +17,8 @@ text-align: justify}
 library(learnr)
 library(tidyverse)
 library(gapminder)
-tutorial_options(exercise.timelimit = 5, exercise.eval = TRUE)
+tutorial_options(exercise.timelimit = 5, exercise.eval = FALSE)
 Sys.setenv(TZ = "America/Lima")
-
 ```
 
 
@@ -129,19 +128,31 @@ Donde `<DATOS>` corresponde a la data que se utilizará, `<GEOM_FUNCIÓN>` repre
 
 Como puedes ver, todas ellas ocurren con un llamado inicial a la función `ggplot`, que nos proporciona la primera capa, las siguientes se van agregando haciendo eso del signo de suma `+`. 
 
-```{r ggplot_ejm1, exercise = TRUE}
+```{r ggplot_ejm1, eval = FALSE}
 ggplot(data = gap_subset)+
   geom_point(mapping = aes(x = pais, y = expectativa_de_vida))
 ```
+
+```{r ggplot_ex1, exercise = TRUE}
+# Copia el código anterior aquí
+
+```
+
 
 En esta ocasión, estamos especificicando nuestros tres elementos: la data a utilizar es `gap_subset`, la geometría señala es punto (`geom_point()`) y en el mapeo estético le pedimos que utilice la variable `pais`en el eje X y la variable `expectativa_de_vida` en el eje Y. El resultado es un gráfico en el que los países aparecen en el eje horizontal, el eje vertical indica la esperanza de vida y los puntos representan el valor de esa variable para cada país.
 
 Debido a que el uso de `ggplot` es muy extendido, se entiende que el elemento con el que se inicia el llamado a `ggplot` es la data, y que los dos primeros mapeos dentro de `aes()` corresponden a los ejes X y Y, es más común escribir el gráfico anterior sin especificar los nombres de argumentos.
 
-```{r ggplot_ejm2, exercise = TRUE}
+```{r ggplot_ejm2, eval = FALSE}
 ggplot(gap_subset)+
   geom_point(aes(pais, expectativa_de_vida))
 ```
+
+```{r ggplot_ex2, exercise=TRUE}
+# Copia el código anterior aquí
+
+```
+
 
 Esto nos da el mismo resultado con un código más conciso. 
 
