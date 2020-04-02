@@ -1,0 +1,150 @@
+---
+title: "Sesión 4"
+output: 
+  learnr::tutorial:
+    progressive: true
+    df_print: 'default'
+runtime: shiny_prerendered
+description: "Aprender los conceptos de tidy data y funciones basicas de ggplot2"
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+library(learnr)
+library(tidyverse)
+library(gapminder)
+tutorial_options(exercise.timelimit = 5, exercise.eval = TRUE)
+Sys.setenv(TZ = "America/Lima")
+
+```
+
+
+## Tema 1: Tidy data
+
+Hasta el momento hemos aprendido a trabajar con dataframes y las funciones del paquete `dplyr`. Sin embargo, sin darnos cuenta hemos estado trabajando con *tidy data*. En castellano, esta exprexión podría traducirse como *datos limpios* o *datos ordenados*. Esto hace referencia a una estructura de almacenamiento de datos que facilita  su uso para ser analizados. 
+
+El trabajo alrededor de data *tidy*, es parte fundamental de la filosofía de los paquetes del *tidyverse* (de ahí ese nombre peculiar). 
+
+El paquete para convertir datos a su formato *tidy* es `tidyr`.
+
+```{r tidyr, eval=FALSE}
+# Para cargar sólo tidyr
+library(tidyr)
+
+# Para cargarlo junto con todo el tidyverse
+library(tidyverse)
+```
+
+### Principios de tidy data
+
+Para saber si mis datos son *tidy* basta con verificar que cumplan con las tres siguientes características:
+
+1. Las observaciones van en las filas
+2. Las variables van en las columnas
+3. Contar con un solo tipo de unidad observacional por tabla
+
+En principio, no suena tan complicado. Pero como siempre, el diablo está en los detalles.
+
+Partamos de un ejemplo válido. `gap_subset` es un subset del dataset `gapminder` que contiene la expectativa de vida, población y PBI per cápita de cuatro países en los años 2002 y 2007.
+
+Lo hemos obtenido a través de este código:
+
+```{r gap_subset}
+library(gapminder)
+
+gap_subset <- gapminder %>% 
+  select(pais = country,
+         year,
+         expectativa_de_vida = lifeExp,
+         poblacion = pop,
+         PBIpc = gdpPercap) %>% 
+  filter(year %in% c(2002, 2007), 
+         pais %in% c("Peru", "Chile", "France", "Spain"))
+
+gap_subset
+  
+```
+
+
+Vemos que cumple con las tres características de *tidy data*. Cada observación corresponde a un país en determinado año, esto está representado en cada fila. Las columnas son variables, porque cada una de ellas nos muestra una característica de la observación. Existe una sola undad de observación en esta tabla, los países. 
+
+Lamentablemente, este tutorial no está pensado para aprender a convertir nuestros datos a formato tidy. Para aprender esto, recomiendo el capítulo 12 "Datos ordenados" del libro [R para Ciencia de Datos](https://es.r4ds.hadley.nz/datos-ordenados.html). Puedes aprovechar para leer todo el libro y subir considerablemente tu nivel de manejo de los paquetes del tidyverse. Está escrito por Garret Grolemund y Hadley Wickham, este último es el creador de los paquetes `dplyr`, `tidyr`, `ggplot2` (que aprendermos en esta sesión) y muchos más.
+
+## Tema 2: Paquete ggplot2
+
+El paquete `ggplot2` nos permite realizar visualizaciones en R. En lugar de ser un motor gráfico, lo que nos brinda un `ggplot2` es una forma de comunicarnos con la computadora de tal manera que en vez de indicarle cómo dibujar cada pixel, le indiquemos de qué manera queremos representar nuestros datos. A esta idea se le ha llamado la Grámatica de los Gráficos (por eso el "gg" en "ggplot2").
+
+El uso de `ggplot2` se ve particularmente beneficiado si previamente contamos con nuestros datos en formato *tidy*. `ggplot2` ha sido por muchos años el paquete más descargado por los usuarios de R (recientemente superado por `dplyr`) y desde el 2007, esto ha contribuido a la difusión de R como lenguaje de programación, y posteriormente a la consolidación de las ideas del tidyverse.
+
+```{r ggplot2, eval=FALSE}
+# Para cargar sólo ggplot2
+library(ggplot2)
+
+# Para cargarlo junto a todo el tidyverse
+library(tidyverse)
+```
+
+### Grámatica de los gráficos
+
+En cada oración en nuestro idioma, las palabras que la conforman tienen una clara definición gramática. Consideremos:
+
+`El veloz murciélago hindú comía feliz cardillo y kiwi`
+
+Cada una de las palabras aporta información a la oración, y la ausencia o modificación de cada una de ellas tendrá un efecto diferenciado en el significado asociado con la oración.
+
+Podemos identificar dos principios subyacentes en la gramática de los gráficos:
+
+1. Los gráficos están compuestos por distintas **capas** de elementos gramaticales
+2. Los gráficos se construyen a través del mapeo de características estéticas apropiadas
+
+Estos principios pueden parecer confusos al inicio, pero vamos a ver que quizás sin darnos cuenta ya los hemos utilizado en otras circunstacias.
+
+### Capas de elementos gramaticales
+
+En la gramática de los gráficos, existen tres elementos gramaticales fundamentales.
+
+1. Data: El set de datos a graficar
+2. Aesthetics: Las escalas contra las que mapeamos nuestra data
+3. Geometries: Los elementos visuales usados para mostrar nuestra data
+
+Existen 4 elementos adicionales, que sirven para controlar algunos detalles de nuestro gráfico. Aquí los menciono, aunque no nos vamos a centrar en ellos.
+
+4. Facets: División del gráfico
+5. Statistics: Transformación estadística para ayudar a la interpretación
+6. Coordinates: El espacio en que se graficará la data
+7. Theme: Todos los cambios no relacionados con la data
+
+Podemos representar los elementos fundamentales con esta plantilla:
+
+```{r plantilla, eval=FALSE}
+ggplot(data = <DATOS>) +
+  <GEOM_FUNCIÓN>(mapping = aes(<MAPEOS>))
+```
+
+Donde `<DATOS>` corresponde a la data que se utilizará, `<GEOM_FUNCIÓN>` representa las geometrías que usaremos para representar la data y `<MAPEOS>` representa las escalas estéticas a utilizar. 
+
+Como puedes ver, todas ellas ocurren con un llamado inicial a la función `ggplot`, que nos proporciona la primera capa, las siguientes se van agregando haciendo eso del signo de suma `+`. 
+
+```{r ggplot_ejm1, exercise = TRUE}
+ggplot(data = gap_subset)+
+  geom_point(mapping = aes(x = pais, y = expectativa_de_vida))
+```
+
+En esta ocasión, estamos especificicando nuestros tres elementos: la data a utilizar es `gap_subset`, la geometría señala es punto (`geom_point()`) y en el mapeo estético le pedimos que utilice la variable `pais`en el eje X y la variable `expectativa_de_vida` en el eje Y. El resultado es un gráfico en el que los países aparecen en el eje horizontal, el eje vertical indica la esperanza de vida y los puntos representan el valor de esa variable para cada país.
+
+Debido a que el uso de `ggplot` es muy extendido, se entiende que el elemento con el que se inicia el llamado a `ggplot` es la data, y que los dos primeros mapeos dentro de `aes()` corresponden a los ejes X y Y, es más común escribir el gráfico anterior sin especificar los nombres de argumentos.
+
+```{r ggplot_ejm2, exercise = TRUE}
+ggplot(gap_subset)+
+  geom_point(aes(pais, expectativa_de_vida))
+```
+
+Esto nos da el mismo resultado con un código más conciso. 
+
+
+
+
