@@ -128,33 +128,66 @@ Donde `<DATOS>` corresponde a la data que se utilizará, `<GEOM_FUNCIÓN>` repre
 
 Como puedes ver, todas ellas ocurren con un llamado inicial a la función `ggplot`, que nos proporciona la primera capa, las siguientes se van agregando haciendo eso del signo de suma `+`. 
 
-```{r ggplot_ejm1, eval = FALSE}
+```{r ggplot_ejm1, exercise = TRUE}
 ggplot(data = gap_subset)+
   geom_point(mapping = aes(x = pais, y = expectativa_de_vida))
 ```
-
-```{r ggplot_ex1, exercise = TRUE}
-# Copia el código anterior aquí
-
-```
-
 
 En esta ocasión, estamos especificicando nuestros tres elementos: la data a utilizar es `gap_subset`, la geometría señala es punto (`geom_point()`) y en el mapeo estético le pedimos que utilice la variable `pais`en el eje X y la variable `expectativa_de_vida` en el eje Y. El resultado es un gráfico en el que los países aparecen en el eje horizontal, el eje vertical indica la esperanza de vida y los puntos representan el valor de esa variable para cada país.
 
 Debido a que el uso de `ggplot` es muy extendido, se entiende que el elemento con el que se inicia el llamado a `ggplot` es la data, y que los dos primeros mapeos dentro de `aes()` corresponden a los ejes X y Y, es más común escribir el gráfico anterior sin especificar los nombres de argumentos.
 
-```{r ggplot_ejm2, eval = FALSE}
+```{r ggplot_ejm2, exercise = TRUE}
 ggplot(gap_subset)+
   geom_point(aes(pais, expectativa_de_vida))
 ```
 
-```{r ggplot_ex2, exercise=TRUE}
-# Copia el código anterior aquí
+Esto nos da el mismo resultado con un código más conciso. 
 
+Fíjate qué sucede cuando en lugar de pedirle puntos (`geom_point()`) a ggplot, le pedimos líneas (`geom_line()`).
+
+```{r ggplot_ejm3, exercise = TRUE}
+ggplot(gap_subset)+
+  geom_line(aes(pais, expectativa_de_vida))
+```
+
+En lugar de obtener puntos, hemos obtenido líneas que conectan las dos observaciones de cada país. Pero esto no es todo, debido a que estamos trabajando con capas, es posible contar al mismo tiempo con puntos y líneas en nuestro gráfico.
+
+```{r ggplot_ejm4, exercise =TRUE}
+ggplot(gap_subset)+
+  geom_line(aes(pais, expectativa_de_vida)) + 
+  geom_point(aes(pais, expectativa_de_vida))
+```
+
+Ten en cuenta que hemos especificado el mapeo estético para cada una de las capas. Sin embargo, es posible indicar que queremos el mismo mapeo para todas las capas dentro de la primera línea de código del gráfico. Al hacer esto, ya no necesito especificarlo dentro de cada capa.
+
+```{r ggplot_ejm5, exercise=TRUE}
+ggplot(gap_subset, aes(pais, expectativa_de_vida))+
+  geom_line() + 
+  geom_point()
+```
+
+Sin embargo, en algunas ocasiones no deseo mapear las mismas variables en todas las capas. `ggplot2` me permite sobreescribir las variables mapeadas con tan solo cambiarlas en la capa deseada.
+
+```{r ggplot_ejm6, exercise=TRUE}
+ggplot(gap_subset, aes(pais, expectativa_de_vida))+
+  geom_line(aes(y = PBIpc)) + 
+  geom_point(aes(y = PBIpc))
+```
+
+### Mapeo de elementos estéticos
+
+Hasta el momento sólo hemos aprendido el mapeo estético de las observaciones en los ejes X y Y, sin embargo es posible mapear otros elementos, como el color, el tamaño, la forma y muchos más. Cada vez que deseo mapear estos elementos en relación a alguna de mis variables, debo hacerlo dentro de un llamado a `aes()`, ya sea en la llamada a `ggplot()` o de algún `geom_*()`.
+
+```{r ggplot_aes_1}
+ggplot(gap_subset, aes(pais, expectativa_de_vida))+
+  geom_line() + 
+  geom_point()
 ```
 
 
-Esto nos da el mismo resultado con un código más conciso. 
+
+
 
 
 
